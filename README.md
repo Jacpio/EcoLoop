@@ -1,56 +1,61 @@
-# Welcome to your Expo app 👋
+# EcoLoop
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplikacja Expo / React Native na Androida, iOS i web, odtworzona na podstawie `AplikacjaMobilna.png` i `AplikacjaWebowa.png`. Interfejs jest po polsku, a układy dopasowują się do szerokości ekranu. Zdjęcia pochodzą z dostarczonych wzorców. Mapy są interaktywne i pobierają kafelki OpenStreetMap.
 
-## Get started
+## Uruchomienie
 
-1. Install dependencies
+W tym folderze:
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```sh
+npm install
+npm start
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+W terminalu Expo wybierz `w`, aby otworzyć wersję webową, lub zeskanuj QR kompatybilną wersją Expo Go. Projekt korzysta z Expo SDK 58. Można też uruchomić `npm run web`.
 
-### Other setup steps
+## Ekrany i ścieżki
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+- `/`: strona webowa na szerokim ekranie; na telefonie pierwsze uruchomienie z trzema slajdami, a potem ekran startowy.
+- `/register`, `/login`: formularze demonstracyjne, wybór roli i wejście jako gość.
+- `/map`, `/point?id=market`: osobne kategorie zwrotu butelek/puszek i elektroniki, filtrowanie listy oraz znaczników, szczegóły, zgłaszanie stanu i otwarcie nawigacji OSM. `?category=electronics` otwiera od razu punkty elektroniki.
+- `/create`: trzy kroki dodawania ogłoszenia, zdjęcie, rodzaj i ilość opakowań, podział kaucji, okolica, termin i podsumowanie.
+- `/collect`: ogłoszenia w okolicy, wyszukiwanie, filtry i sortowanie, przyjęcie odbioru.
+- `/orders`, `/collection?id=EL-1042`, `/plan`: odbiory, potwierdzenie przekazania PIN-em, lista trasy i podsumowanie zwrotu.
+- `/problem`, `/shortage`, `/rejected` z parametrem `id`: nieobecność, korekta liczby opakowań, odrzucenie w punkcie i zdjęcie do zgłoszenia.
+- `/electro`, `/electro-form`: elektronika do uprawnionego partnera; `?donation=true` otwiera osobną ścieżkę sprawnego sprzętu.
+- `/profile`, `/history`, `/preferences`, `/notifications`, `/safety`, `/help`, `/abuse`, `/rewards`: konto, historia, preferencje, zasady i podgląd planowanych nagród.
+- `/partner`: zgłoszenia elektroniki, terminy, statusy i dokumentacja demonstracyjna.
+- `/admin`: sprawy, filtry, zmiana statusu, zgłoszenie nowego punktu do weryfikacji i eksport CSV na webie.
 
-## Learn more
+## Działanie wersji demonstracyjnej
 
-To learn more about developing your project with Expo, look at the following resources:
+Dane zapisują się lokalnie przez AsyncStorage, również po odświeżeniu przeglądarki. Profil, ogłoszenia i odbiory nie synchronizują się między urządzeniami. Hasła nie są zapisywane ani przesyłane. Przyciski logowania zewnętrznego jasno informują o trybie demo. Panele pozwalają obejrzeć wszystkie role bez prawdziwych uprawnień administracyjnych.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+PIN przykładowego przekazania to **7429**. Dopiero po jego wpisaniu można zakończyć zwrot, podając rzeczywistą liczbę opakowań. PET i puszki mają w kalkulatorze stawkę 0,50 zł, szkło 1 zł. Rozliczenia są symulowane i nie wykonują płatności. EcoPoints i nagrody pozostają koncepcją, jak we wzorcach.
 
-## Join the community
+Mapa korzysta z Leaflet 1.9.4 i kafelków `https://tile.openstreetmap.org/{z}/{x}/{y}.png`. Działa na webie oraz w natywnym WebView, obsługuje przesuwanie, przybliżanie i wybór znaczników. Kaucjomaty/ręczny zwrot opakowań i elektronika mają osobne widoki, kolory oraz symbole. Filtry obejmują jednocześnie listę i mapę. Punkty i ich współrzędne są przykładowe; nie jest to publiczny katalog rzeczywistych partnerów ani dostępności na żywo. Przycisk lokalizacji prosi o dostęp wyłącznie na żądanie; pozycja jest używana w bieżącym widoku i nie trafia do lokalnej bazy profilu. Nawigacja pojedynczego punktu otwiera OpenStreetMap. Plan wielopunktowy nadal może otworzyć Google Maps. Czat i dokumentacja zapisują lokalną treść lub nazwę dokumentu, bez wysyłania wiadomości i plików do partnera.
 
-Join our community of developers creating universal apps.
+Dane demonstracyjne można przywrócić w Profil → Prywatność i dane → Usuń moje dane demo. Odświeżenie aplikacji po tej operacji ponownie pokaże onboarding mobilny.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Sprawdzenie projektu
+
+```sh
+npm run lint
+npm run typecheck
+npm run test:map
+npx expo export --platform all --output-dir /tmp/ecoloop-build
+```
+
+Kontrola obejmuje TypeScript, ESLint, produkcyjne paczki web/Android/iOS i przejście głównych ścieżek w przeglądarce. Test układu mobilnego w przeglądarce nie zastępuje uruchomienia na rzeczywistym urządzeniu.
+
+## Materiały
+
+- Fotografie: fragmenty PNG przekazanych przez użytkownika.
+- Mapa: © OpenStreetMap contributors; przypisanie licencji widoczne na każdej mapie. Kafelki wymagają internetu i korzystają ze standardowego cache przeglądarki/WebView, bez pobierania offline.
+- Leaflet 1.9.4 (BSD-2-Clause): skrypt i CSS są pakowane lokalnie w `src/ecoloop/maps/leaflet-vendor.ts`, licencja w tym samym folderze. Po aktualizacji pakietu uruchom `npm run sync-map-vendor`.
+- Czcionka Barlow: Google Fonts, SIL Open Font License; licencja w `assets/ecoloop/fonts/OFL.txt`.
+- Ikony interfejsu: lokalne wektory SVG. Ikona aplikacji: lokalny znak EcoLoop.
+
+## Samouczek
+
+Animacje wygaszania, przesunięcia zdjęcia i tekstu oraz delikatnego przybliżenia zdjęcia. Animowany wskaźnik postępu, przyciski Dalej/Wstecz i gest przesuwania zdjęcia. Szybkie wielokrotne naciśnięcia są blokowane na czas przejścia. Ustawienie ograniczenia animacji w systemie jest respektowane. Samouczek można obejrzeć ponownie pod `/onboarding`.
