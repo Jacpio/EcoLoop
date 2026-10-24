@@ -1,6 +1,6 @@
 # EcoLoop
 
-Aplikacja Expo / React Native na Androida, iOS i web, odtworzona na podstawie `AplikacjaMobilna.png` i `AplikacjaWebowa.png`. Interfejs jest po polsku, a układy dopasowują się do szerokości ekranu. Zdjęcia pochodzą z dostarczonych wzorców. Mapy są interaktywne i pobierają kafelki OpenStreetMap.
+Aplikacja Expo / React Native na Androida, iOS i web. Interfejs jest po polsku, a układy dopasowują się do szerokości ekranu. Zdjęcia pochodzą z dostarczonych wzorców. Mapy są interaktywne i pobierają kafelki OpenStreetMap.
 
 ## Uruchomienie
 
