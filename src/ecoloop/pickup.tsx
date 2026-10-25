@@ -501,6 +501,12 @@ export function OrdersScreen() {
                   <T muted>
                     {o.date} · {o.time}
                   </T>
+                  {o.blik && (
+                    <T muted size={13}>
+                      Rozliczenie: gotówka lub BLIK
+                      {o.phone ? ` · ${formatPhone(o.phone)}` : ""}
+                    </T>
+                  )}
                   <T muted size={13}>
                     Dokładny adres podasz prywatnie po przyjęciu odbioru.
                   </T>
