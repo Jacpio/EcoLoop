@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Image, Linking } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import * as ImagePicker from "expo-image-picker";
 import {
   acceptOffer,
   Calculator,
@@ -12,7 +11,19 @@ import {
   PrivacyNote,
   Timeline,
 } from "./blocks";
-import { Collection, estimate, initialDraft, Material, money } from "./domain";
+import {
+  Collection,
+  createDraft,
+  estimate,
+  isPastDate,
+  Material,
+  money,
+  Offer,
+  parseDatePl,
+  validDate,
+  validTime,
+} from "./domain";
+import { pickPhoto } from "./photo";
 import { useEco } from "./store";
 import {
   Badge,
@@ -33,25 +44,32 @@ import {
   useDesktop,
 } from "./ui";
 
-function validDate(value: string) {
-  const match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(value);
-  if (!match) return false;
-  const [, d, m, y] = match;
-  const date = new Date(+y, +m - 1, +d);
-  return (
-    date.getDate() === +d &&
-    date.getMonth() === +m - 1 &&
-    date.getFullYear() === +y
-  );
+/** First problem found in the draft, checking steps 1..upToStep. */
+function draftProblem(draft: Offer, upToStep: number) {
+  if (
+    !Number.isInteger(draft.quantity) ||
+    draft.quantity < 1 ||
+    draft.quantity > 1000
+  )
+    return { step: 1, message: "Podaj liczbę całkowitą od 1 do 1000." };
+  if (upToStep < 2) return null;
+  if (!draft.area.trim() || !validDate(draft.date) || !validTime(draft.time))
+    return {
+      step: 2,
+      message:
+        "Podaj okolicę, poprawną datę DD.MM.RRRR i przedział godzin HH:MM–HH:MM.",
+    };
+  if (isPastDate(draft.date))
+    return { step: 2, message: "Termin odbioru nie może być w przeszłości." };
+  return null;
 }
-function validTime(value: string) {
-  const match = /^(\d{2}):(\d{2})[–-](\d{2}):(\d{2})$/.exec(value);
-  if (!match) return false;
-  const [, h, m, endH, endM] = match.map(Number);
-  return (
-    h < 24 && endH < 24 && m < 60 && endM < 60 && h * 60 + m < endH * 60 + endM
-  );
-}
+const startMinutes = (time: string) => {
+  const [hours, minutes] = time.split(/[–-]/)[0].split(":").map(Number);
+  return (hours || 0) * 60 + (minutes || 0);
+};
+/** Sort key: pickup day first, then the start of the time window. */
+const pickupOrder = (offer: Pick<Offer, "date" | "time">) =>
+  (parseDatePl(offer.date)?.getTime() ?? 0) + startMinutes(offer.time) * 60000;
 export function CreateScreen() {
   const { step: stepParam } = useLocalSearchParams<{ step?: string }>();
   const step = Math.min(3, Math.max(1, Number(stepParam) || 1));
@@ -61,29 +79,23 @@ export function CreateScreen() {
   const [error, setError] = useState("");
   const patch = (value: Partial<typeof draft>) =>
     update((s) => ({ ...s, draft: { ...s.draft, ...value } }));
+  const reject = (found: { step: number; message: string }) => {
+    setError(found.message);
+    if (found.step !== step) {
+      notify(found.message);
+      go("create", { step: String(found.step) });
+    }
+  };
   const next = () => {
-    if (
-      step === 1 &&
-      (!Number.isInteger(draft.quantity) ||
-        draft.quantity < 1 ||
-        draft.quantity > 1000)
-    ) {
-      setError("Podaj liczbę całkowitą od 1 do 1000.");
-      return;
-    }
-    if (
-      step === 2 &&
-      (!draft.area.trim() || !validDate(draft.date) || !validTime(draft.time))
-    ) {
-      setError(
-        "Podaj okolicę, poprawną datę DD.MM.RRRR i przedział godzin HH:MM–HH:MM.",
-      );
-      return;
-    }
+    const found = draftProblem(draft, step);
+    if (found) return reject(found);
     setError("");
     go("create", { step: String(step + 1) });
   };
-  const publish = () =>
+  const publish = () => {
+    // The step can also be opened directly (?step=3), so re-check everything.
+    const found = draftProblem(draft, 2);
+    if (found) return reject(found);
     requireUser(() => {
       const offer = {
         ...draft,
@@ -93,27 +105,16 @@ export function CreateScreen() {
       update((s) => ({
         ...s,
         offers: [offer, ...s.offers],
-        draft: initialDraft,
+        draft: createDraft(),
       }));
       notify("Ogłoszenie opublikowane. Jest widoczne w odbiorach w okolicy.");
       go("orders", { published: offer.id });
     });
+  };
   const photo = async () => {
     try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
-        quality: 0.7,
-        base64: true,
-      });
-      if (!result.canceled)
-        patch({
-          photo: result.assets[0].base64
-            ? "data:" +
-              (result.assets[0].mimeType || "image/jpeg") +
-              ";base64," +
-              result.assets[0].base64
-            : result.assets[0].uri,
-        });
+      const uri = await pickPhoto(0.7);
+      if (uri) patch({ photo: uri });
     } catch {
       notify("Nie udało się otworzyć zdjęć. Sprawdź uprawnienia aplikacji.");
     }
@@ -305,11 +306,7 @@ export function CollectScreen() {
       sort === "Kwota"
         ? estimate(b).collector - estimate(a).collector
         : sort === "Termin"
-          ? a.date
-              .split(".")
-              .reverse()
-              .join("")
-              .localeCompare(b.date.split(".").reverse().join(""))
+          ? pickupOrder(a) - pickupOrder(b)
           : parseFloat(a.distance.replace(",", ".")) -
             parseFloat(b.distance.replace(",", ".")),
     );
@@ -362,7 +359,7 @@ export function CollectScreen() {
         {desktop && (
           <Col style={{ flex: 1.7 }}>
             <MapCanvas height={400} />
-            <Calculator offer={offers[0] || initialDraft} />
+            <Calculator offer={offers[0] || createDraft()} />
             <Button secondary icon="map" onPress={() => go("plan")}>
               Przejdź do planu odbiorów
             </Button>
@@ -585,7 +582,7 @@ export function CollectionScreen() {
                 keyboardType="number-pad"
                 maxLength={4}
                 value={pin}
-                onChangeText={setPin}
+                onChangeText={(value) => setPin(value.replace(/\D/g, ""))}
                 placeholder="Wpisz 4 cyfry"
               />
               <Button onPress={confirmPin}>Potwierdź odbiór opakowań</Button>
@@ -691,14 +688,14 @@ export function CollectionScreen() {
   );
 }
 export function PlanScreen() {
-  const { state } = useEco();
+  const { state, notify } = useEco();
   const desktop = useDesktop();
   const active = state.collections.filter((c) =>
     ["Przyjęty", "Odebrany"].includes(c.status),
   );
   const [sort, setSort] = useState("Kolejność przyjęcia");
   const collections = [...active].sort((a, b) =>
-    sort === "Godzina odbioru" ? a.time.localeCompare(b.time) : 0,
+    sort === "Godzina odbioru" ? pickupOrder(a) - pickupOrder(b) : 0,
   );
   const sum = collections.reduce(
     (total, c) =>
@@ -775,8 +772,13 @@ export function PlanScreen() {
             Linking.openURL(
               "https://www.google.com/maps/dir/?api=1&destination=Warszawa+Marszalkowska+104&waypoints=" +
                 encodeURIComponent(
-                  collections.map((c) => "Warszawa " + c.address).join("|"),
+                  // Street and number only: flat and staircase stay private.
+                  collections
+                    .map((c) => "Warszawa " + c.address.split(",")[0])
+                    .join("|"),
                 ),
+            ).catch(() =>
+              notify("Nie można otworzyć Map Google. Spróbuj ponownie później."),
             )
           }
         >
@@ -794,7 +796,10 @@ export function ProblemScreen({
   const { id = "EL-1042" } = useLocalSearchParams<{ id?: string }>();
   const { state, update, dialog, notify } = useEco();
   const collection = state.collections.find((c) => c.id === id);
-  const [amount, setAmount] = useState("36");
+  const available = collection ? (collection.actual ?? collection.quantity) : 0;
+  const [amount, setAmount] = useState(() =>
+    String(Math.max(0, available - 4)),
+  );
   const [reason, setReason] = useState("Brak znaku kaucji");
   const [issuePhoto, setIssuePhoto] = useState<string | undefined>();
   const desktop = useDesktop();
@@ -815,6 +820,19 @@ export function ProblemScreen({
         />
       </Shell>
     );
+  if (["Zakończony", "Anulowany"].includes(collection.status))
+    return (
+      <Shell title={title}>
+        <Empty
+          title="Odbiór jest już zamknięty"
+          text="Zgłoszenia można dodawać tylko do aktywnych odbiorów."
+          action="Moje odbiory"
+          onPress={() => go("orders")}
+        />
+      </Shell>
+    );
+  // A correction may only lower the original count; a rejection only the received one.
+  const max = kind === "shortage" ? collection.quantity : available;
   const patch = (value: Partial<Collection>) =>
     update((s) => ({
       ...s,
@@ -824,12 +842,8 @@ export function ProblemScreen({
     }));
   const saveAmount = () => {
     const actual = Number(amount);
-    if (
-      !Number.isInteger(actual) ||
-      actual < 0 ||
-      actual > collection.quantity
-    ) {
-      notify(`Wpisz liczbę od 0 do ${collection.quantity}.`);
+    if (!Number.isInteger(actual) || actual < 0 || actual > max) {
+      notify(`Wpisz liczbę od 0 do ${max}.`);
       return;
     }
     if (kind === "shortage")
@@ -841,7 +855,7 @@ export function ProblemScreen({
       patch({
         returned: actual,
         issuePhoto,
-        problem: `Odrzucone opakowania: ${collection.quantity - actual}. Powód: ${reason}.`,
+        problem: `Odrzucone opakowania: ${available - actual}. Powód: ${reason}.`,
       });
     notify("Zmiany zapisane przy odbiorze.");
     go("collection", { id });
@@ -945,7 +959,7 @@ export function ProblemScreen({
             <Calculator
               offer={{
                 ...collection,
-                quantity: Math.max(0, Number(amount) || 0),
+                quantity: Math.min(max, Math.max(0, Number(amount) || 0)),
               }}
               full={false}
             />
@@ -970,20 +984,8 @@ export function ProblemScreen({
                   icon="upload"
                   onPress={async () => {
                     try {
-                      const result = await ImagePicker.launchImageLibraryAsync({
-                        mediaTypes: ["images"],
-                        quality: 0.6,
-                        base64: true,
-                      });
-                      if (!result.canceled)
-                        setIssuePhoto(
-                          result.assets[0].base64
-                            ? "data:" +
-                                (result.assets[0].mimeType || "image/jpeg") +
-                                ";base64," +
-                                result.assets[0].base64
-                            : result.assets[0].uri,
-                        );
+                      const uri = await pickPhoto(0.6);
+                      if (uri) setIssuePhoto(uri);
                     } catch {
                       notify("Nie udało się otworzyć zdjęć.");
                     }
