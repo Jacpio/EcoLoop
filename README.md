@@ -33,6 +33,8 @@ Dane zapisują się lokalnie przez AsyncStorage, również po odświeżeniu prze
 
 PIN przykładowego przekazania to **7429**. Dopiero po jego wpisaniu można zakończyć zwrot, podając rzeczywistą liczbę opakowań. PET i puszki mają w kalkulatorze stawkę 0,50 zł, szkło 1 zł. Rozliczenia są symulowane i nie wykonują płatności. EcoPoints i nagrody pozostają koncepcją, jak we wzorcach.
 
+Numer telefonu do BLIK podasz w Profil → Okolica i preferencje. Przy zwrocie w kaucjomacie pojawia się kafelek „Odbiór kaucji przelewem” (informacja, że automat przeleje kaucję BLIK-iem po przetworzeniu butelek), a w ogłoszeniu można wybrać „Gotówka lub BLIK” i podać numer, który zobaczy dopiero przyjmujący odbiór. To makieta: nie wykonuje przelewów, a prawdziwa wypłata z automatu wymagałaby współpracy z operatorem kaucjomatów.
+
 Mapa korzysta z Leaflet 1.9.4 i kafelków `https://tile.openstreetmap.org/{z}/{x}/{y}.png`. Działa na webie oraz w natywnym WebView, obsługuje przesuwanie, przybliżanie i wybór znaczników. Kaucjomaty/ręczny zwrot opakowań i elektronika mają osobne widoki, kolory oraz symbole. Filtry obejmują jednocześnie listę i mapę. Punkty i ich współrzędne są przykładowe; nie jest to publiczny katalog rzeczywistych partnerów ani dostępności na żywo. Przycisk lokalizacji prosi o dostęp wyłącznie na żądanie; pozycja jest używana w bieżącym widoku i nie trafia do lokalnej bazy profilu. Nawigacja pojedynczego punktu otwiera OpenStreetMap. Plan wielopunktowy nadal może otworzyć Google Maps. Czat i dokumentacja zapisują lokalną treść lub nazwę dokumentu, bez wysyłania wiadomości i plików do partnera.
 
 Dane demonstracyjne można przywrócić w Profil → Prywatność i dane → Usuń moje dane demo. Odświeżenie aplikacji po tej operacji ponownie pokaże onboarding mobilny.
