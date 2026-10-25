@@ -10,6 +10,7 @@ const {
   isPastDate,
   normalizeText,
   normalizePhone,
+  parseCount,
   parseDatePl,
   relativeDay,
   supportsArea,
@@ -208,4 +209,11 @@ test("Numer telefonu jest wyświetlany jako +48 XXX XXX XXX", () => {
   assert.equal(formatPhone("512345678"), "+48 512 345 678");
   assert.equal(formatPhone(""), "");
   assert.equal(formatPhone("abc"), "abc");
+});
+
+test("Liczba opakowań: tylko cyfry, puste pole i zapis naukowy to nie zero", () => {
+  assert.equal(parseCount("36"), 36);
+  assert.equal(parseCount(" 0 "), 0);
+  for (const value of ["", "   ", "1e1", "0x10", "-3", "1.5", "abc", "12abc"])
+    assert.equal(parseCount(value), null, JSON.stringify(value));
 });

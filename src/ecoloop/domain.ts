@@ -184,6 +184,9 @@ export const estimate = (
     owner: (totalCents - collectorCents) / 100,
   };
 };
+/** Whole number from plain digits only; "", " ", "1e1" and "-3" give null. */
+export const parseCount = (value: string) =>
+  /^\d+$/.test(value.trim()) ? Number(value) : null;
 /** Nine-digit Polish number from "+48 512-345-678" style input, or null. */
 export function normalizePhone(value: string) {
   const compact = value.replace(/[\s-]/g, "");

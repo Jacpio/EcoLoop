@@ -21,6 +21,7 @@ import {
   money,
   normalizePhone,
   Offer,
+  parseCount,
   parseDatePl,
   validDate,
   validTime,
@@ -604,10 +605,9 @@ export function CollectionScreen() {
       ),
       confirm: "Zakończ odbiór",
       onConfirm: (value) => {
-        const returned = Number(value);
+        const returned = parseCount(value);
         if (
-          !Number.isInteger(returned) ||
-          returned < 0 ||
+          returned === null ||
           returned > (collection.actual ?? collection.quantity)
         ) {
           notify("Podaj poprawną liczbę opakowań.");
@@ -990,8 +990,8 @@ export function ProblemScreen({
       ),
     }));
   const saveAmount = () => {
-    const actual = Number(amount);
-    if (!Number.isInteger(actual) || actual < 0 || actual > max) {
+    const actual = parseCount(amount);
+    if (actual === null || actual > max) {
       notify(`Wpisz liczbę od 0 do ${max}.`);
       return;
     }
