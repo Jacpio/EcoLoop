@@ -9,6 +9,7 @@ const {
   isPastDate,
   normalizeText,
   parseDatePl,
+  relativeDay,
   supportsArea,
   validDate,
   validTime,
@@ -79,6 +80,19 @@ test("Daty z przeszłości są rozpoznawane względem podanego dnia", () => {
   assert.equal(isPastDate("25.10.2026", now), false);
   assert.equal(isPastDate("26.10.2026", now), false);
   assert.equal(isPastDate("nie data", now), false);
+});
+
+test("Etykiety dni: dziś, jutro lub data, także wokół zmiany czasu", () => {
+  const saturday = new Date(2026, 9, 24, 23, 59);
+  assert.equal(relativeDay("24.10.2026", saturday), "dziś");
+  assert.equal(relativeDay("25.10.2026", saturday), "jutro");
+  assert.equal(relativeDay("26.10.2026", saturday), "26.10.2026");
+  assert.equal(relativeDay("23.10.2026", saturday), "23.10.2026");
+  // 25.10.2026 has 25 hours (clocks go back), 26.10 must still be "jutro".
+  const changeDay = new Date(2026, 9, 25, 0, 30);
+  assert.equal(relativeDay("25.10.2026", changeDay), "dziś");
+  assert.equal(relativeDay("26.10.2026", changeDay), "jutro");
+  assert.equal(relativeDay("nie data", changeDay), "nie data");
 });
 
 test("Okno czasowe: kolejność godzin, zakresy i separator", () => {

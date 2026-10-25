@@ -47,19 +47,29 @@ function MobileHome() {
   return (
     <Shell title={`Cześć, ${state.user?.name.split(" ")[0] || "Anno"}!`}>
       <Col>
-        <Row style={{ alignItems: "center" }}>
-          <Icon name="pin" size={15} />
-          <T size={13} muted>
-            Warszawa, Centrum · obok zielony
-          </T>
-        </Row>
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel="Zmień okolicę"
+          onPress={() => go("preferences")}
+        >
+          <Row style={{ alignItems: "center" }}>
+            <Icon name="pin" size={15} />
+            <T size={13} muted>
+              {state.preferences.area} · zmień okolicę
+            </T>
+          </Row>
+        </Pressable>
         <Row>
-          <Button style={{ flex: 1 }} icon="pin" onPress={() => go("map")}>
+          <Button
+            style={{ flex: 1.3, paddingHorizontal: 12 }}
+            icon="pin"
+            onPress={() => go("map")}
+          >
             Znajdź kaucjomat
           </Button>
           <Button
             secondary
-            style={{ flex: 1 }}
+            style={{ flex: 1, paddingHorizontal: 12 }}
             icon="plus"
             onPress={() => go("create")}
           >

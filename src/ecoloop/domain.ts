@@ -208,6 +208,15 @@ export function parseDatePl(value: string) {
     : null;
 }
 export const validDate = (value: string) => parseDatePl(value) !== null;
+/** "dziś" / "jutro" for the next two days, otherwise the date itself. */
+export function relativeDay(value: string, now = new Date()) {
+  const date = parseDatePl(value);
+  if (!date) return value;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  // Rounding absorbs the 23/25-hour days around daylight-saving changes.
+  const diff = Math.round((date.getTime() - today.getTime()) / 86400000);
+  return diff === 0 ? "dziś" : diff === 1 ? "jutro" : value;
+}
 export function isPastDate(value: string, now = new Date()) {
   const date = parseDatePl(value);
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

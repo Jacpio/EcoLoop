@@ -8,6 +8,7 @@ import {
   money,
   Offer,
   points,
+  relativeDay,
 } from "./domain";
 import { useEco } from "./store";
 import {
@@ -62,29 +63,38 @@ export function OfferCard({
   );
   return (
     <Card style={{ padding: compact ? 14 : 18, gap: 6 }}>
-      <Row style={{ justifyContent: "space-between" }}>
-        <T color={C.brand} bold size={compact ? 17 : 19}>
-          {money(amounts.collector)} dla Ciebie · szac.
-        </T>
-        {compact && (
-          <T bold color={C.brand}>
+      {compact ? (
+        <Row style={{ justifyContent: "space-between", alignItems: "center" }}>
+          <Badge>
+            {offer.area} · {offer.distance}
+          </Badge>
+          <T color={C.brand} bold size={22}>
             {money(amounts.collector)}
           </T>
-        )}
-      </Row>
+        </Row>
+      ) : (
+        <T color={C.brand} bold size={19}>
+          {money(amounts.collector)} dla Ciebie · szac.
+        </T>
+      )}
       <T bold>
         {offer.quantity} {offer.material} · ok.{" "}
         {offer.quantity > 30 ? "2–3 torby" : "1 torba"}
       </T>
-      <T size={14}>
-        {offer.area} · {offer.distance}
-      </T>
-      <T size={14}>
-        {offer.date} · {offer.time}
-      </T>
+      {!compact && (
+        <T size={14}>
+          {offer.area} · {offer.distance} · {relativeDay(offer.date)}{" "}
+          {offer.time}
+        </T>
+      )}
       <T muted size={13}>
-        Kaucja szac. {money(amounts.total)} · udział {offer.share}%
+        Kaucja szac. {money(amounts.total)} · Twój udział {offer.share}%
       </T>
+      {compact && (
+        <T size={14}>
+          {relativeDay(offer.date)}, {offer.time}
+        </T>
+      )}
       {!compact && (
         <Button
           secondary={offer.id !== "EL-1042"}
