@@ -47,7 +47,9 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "sync-map-vendor": "node scripts/sync-map-vendor.cjs",
-    "test:map": "node --experimental-strip-types --test scripts/map.test.cjs"
+    "test:map": "node --experimental-strip-types --test scripts/map.test.cjs",
+    "test": "node --experimental-strip-types --test scripts/map.test.cjs scripts/domain.test.cjs scripts/persist.test.cjs",
+    "verify": "npm run lint && npm run typecheck && npm test"
   },
   "private": true
 }
