@@ -2,10 +2,12 @@
 
 Stan: 25.10.2026. Projekt pozostaje lokalną demonstracją na podstawie obu dostarczonych PNG.
 
+> Uwaga: poniższa sekcja „Wykonane kontrole” pochodzi z pierwszej wersji projektu. Stwierdzenie, że `npm run typecheck` przechodzi bez błędów, nie było prawdziwe (3 błędy, patrz audyt niżej). Aktualne wyniki są w sekcji „Audyt 25.10.2026”.
+
 ## Wykonane kontrole
 
 - `npm run lint`: bez błędów i ostrzeżeń.
-- `npm run typecheck`: bez błędów.
+- `npm run typecheck`: bez błędów (nieprawda w tamtym stanie repozytorium, patrz audyt).
 - `npx expo export --platform all --output-dir /tmp/ecoloop-build`: poprawny eksport web, Android i iOS.
 - Kalkulator: stawki PET/puszki/szkło, korekta 40 → 36 oraz 60 wariantów ilości i procentów. Podział po zaokrągleniu sumuje się do całej kaucji z dokładnością do grosza.
 - Przeglądarka: układ mobilny i desktop, trzy slajdy onboardingu, publikacja ogłoszenia w trzech krokach i zachowanie danych po odświeżeniu.
@@ -28,3 +30,48 @@ Nie wykonano uruchomienia na fizycznym telefonie ani podpisanego buildu EAS. Eks
 - Testy `npm run test:map` obejmują rozdzielenie kategorii we wszystkich kombinacjach filtrów, obsługę szkła, wyszukiwanie, współrzędne i odrzucanie obcych komunikatów mostu mapy.
 - Nie przyznawano podczas testów zgody na lokalizację urządzenia i nie sprawdzano GPS na fizycznym telefonie. Wariant Android/iOS korzysta z natywnego WebView; fizyczny test tego widoku pozostaje odrębnym etapem.
 - Poprzedni opis mapy jako tła demonstracyjnego jest nieaktualny. Demonstracyjne pozostają punkty oraz ich dostępność, a nie mapa.
+
+## Audyt 25.10.2026 (gałąź `review/full-project-audit`)
+
+Przegląd całego kodu (`src/ecoloop`, trasy, mapa, stan, skrypty) oraz porównanie z ramkami z `FIGMA/` w natywnej rozdzielczości.
+
+### Stan wyjściowy (commit `a70a620`)
+
+- `npm run typecheck`: **3 błędy** (2× brakujące deklaracje `*.css` w nieużywanych plikach szablonu Expo, 1× `hovered` w `Button`). Dokument powyżej twierdził co innego.
+- `npm run lint`: czysto. `npm run test:map`: 5/5.
+- `npx expo export --platform all`: poprawny (Metro nie sprawdza typów).
+
+### Znalezione i naprawione problemy
+
+| Obszar | Problem | Naprawa |
+| --- | --- | --- |
+| Typy | `hovered` nie istnieje w typach RN | Wąskie rzutowanie (tylko web) |
+| Szablon | Nieużywany kod startowy Expo i `reset-project` (kasuje `src/app`) | Usunięte |
+| Stan | Odczyt zapisu sprawdzał tylko 4 tablice; złe typy pól mogły psuć ekrany | `persist.ts`, pole po polu, testy |
+| Ogłoszenie | Walidacja tylko w przyciskach „Dalej”; `/create?step=3` pozwalał opublikować 0 opakowań i błędną datę | Pełna walidacja przy publikacji, zakaz dat z przeszłości |
+| Ogłoszenie | Domyślna data zaszyta jako 25.10.2026 | `createDraft()` (dzisiaj) |
+| Korekty | Domyślne „36” zaszyte; dla odbioru 24 puszek zapis był odrzucany | Wartość liczona z odbioru; limity korekty i odrzucenia |
+| Korekty | Zakończony lub anulowany odbiór dało się edytować przez URL | Ekran „Odbiór jest już zamknięty” |
+| PIN | Pole przyjmowało litery | Tylko cyfry |
+| Plan | „Godzina odbioru” sortował same godziny; link do Google zawierał klatkę i mieszkanie; błąd otwarcia linku nieobsłużony | Sortowanie dzień + godzina, tylko ulica i numer, komunikat |
+| Wyszukiwanie | Tylko dwa dokładne zapytania działały jak „całe miasto”; polskie znaki psuły wyszukiwanie | Normalizacja, słowa miasta/dzielnicy pomijane, reszta musi pasować |
+| Dialog | Po zamknięciu przez ok. 200 ms widać było pusty biały modal | Treść zostaje na czas animacji |
+| Zdjęcia | Base64 całego zdjęcia w jednym kluczu pamięci (limit ok. 5 MB web, ok. 2 MB wiersz Android) | Web: zmniejszenie do 1024 px; native: adres pliku |
+| Partner | „✓ w zasięgu obsługi” zawsze zielone | Wynik `supportsArea` |
+| Punkt | Nieznany `?id=` dawał pustą mapę i kartę Market Centrum | Jeden, spójny punkt |
+| Mobile (Figma) | Przycisk „Znajdź kaucjomat” zawijał się; „obok zielony” zamiast „zmień okolicę”; kwota powtórzona na karcie; mapa pod dwoma ekranami filtrów | Dopasowane do ramek |
+
+### Wyniki po zmianach
+
+- `npm run lint`, `npm run typecheck`: bez błędów i ostrzeżeń.
+- `npm test`: 23/23 (mapa 5, kalkulator/daty/wyszukiwanie 12, zapis stanu 6).
+- `npx expo export --platform all`: poprawny (iOS, Android, web + render serwerowy). `npx expo-doctor`: 20/20.
+- Przeglądarka (Chromium przez Playwright, mobile 390 px i desktop 1440 px, dev serwer `expo start --web`), 18 scenariuszy, wszystkie zaliczone, bez błędów JavaScript w konsoli (pominięto jedynie komunikaty o niedostępnych kafelkach mapy):
+  onboarding i rejestracja z walidacją; `/create?step=3` ze złym szkicem; data z przeszłości i nieistniejąca; publikacja i reset szkicu; korekta dla EL-1043 (domyślnie 20, limit 24); pełny odbiór EL-1042 (litery w PIN, 0000 odrzucony, 7429, korekta 40→36, zakończenie, podział 9 zł + 9 zł, zamknięte adresy `/problem`, `/shortage`, `/rejected`); odrzucenie ograniczone do przyjętej liczby; anulowanie i ponowne przyjęcie; odczyt starego i uszkodzonego zapisu; „Usuń moje dane demo”; wyszukiwanie mapy (`zelazna`, ulica + miasto, przełączanie kategorii); zgłoszenie elektroniki z obszarem; zgłoszenie punktu do panelu admina; brak pustego okna przy zamykaniu dialogu; zdjęcie 11,6 MB → 242 KB po odświeżeniu; 16 tras desktopowych renderuje się bez „Nie znaleziono strony”, a 17 tras mobilnych (w tym nieznany punkt i nieistniejąca strona) bez poziomego przewijania.
+
+### Czego nie sprawdzono
+
+- Fizyczny telefon, natywny WebView z mapą, systemowy wybór zdjęć i GPS (tylko web).
+- Podpisany build EAS. W `app.json` brak `android.package` i `ios.bundleIdentifier` — trzeba je ustalić zespołowo przed buildem sklepowym.
+- `npm audit --omit=dev`: nadal 5 alertów high w łańcuchu Expo CLI (`node-forge`, `zod`). Nie uruchamiano `npm audit fix --force`, bo proponuje obniżenie do Expo SDK 44.
+- Różnice względem Figmy, których świadomie nie zmieniano: plan odbiorów jako lista pogrupowana po dniach z sumą „32 zł / 16 zł”, oś czasu na kartach „Moje odbiory”, dane opiekuna odbioru (Michał K., ocena 4,9). Wersja desktopowa jest zgodna z ramkami.
