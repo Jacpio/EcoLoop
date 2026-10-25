@@ -183,23 +183,57 @@ export const materialLabel = (material: Material) =>
     : material === "Puszki"
       ? "puszek aluminiowych"
       : "butelek szklanych";
-export const initialDraft: Offer = {
+const pad = (value: number) => String(value).padStart(2, "0");
+export const formatDatePl = (date: Date) =>
+  `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
+/** Fresh draft for the "add offer" flow; the date defaults to today. */
+export const createDraft = (now = new Date()): Offer => ({
   ...initialOffers[0],
   id: "",
   area: "Warszawa, Centrum",
   distance: "0 km",
-};
+  date: formatDatePl(now),
+});
+
+/** Parses DD.MM.RRRR; returns null for malformed or non-existent dates. */
+export function parseDatePl(value: string) {
+  const match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(value.trim());
+  if (!match) return null;
+  const [, d, m, y] = match;
+  const date = new Date(+y, +m - 1, +d);
+  return date.getDate() === +d &&
+    date.getMonth() === +m - 1 &&
+    date.getFullYear() === +y
+    ? date
+    : null;
+}
+export const validDate = (value: string) => parseDatePl(value) !== null;
+export function isPastDate(value: string, now = new Date()) {
+  const date = parseDatePl(value);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return !!date && date < today;
+}
+/** HH:MM–HH:MM with a start strictly before the end. */
+export function validTime(value: string) {
+  const match = /^(\d{2}):(\d{2})\s*[–-]\s*(\d{2}):(\d{2})$/.exec(value.trim());
+  if (!match) return false;
+  const [, h, m, endH, endM] = match.map(Number);
+  return (
+    h < 24 && endH < 24 && m < 60 && endM < 60 && h * 60 + m < endH * 60 + endM
+  );
+}
+/** Lower-cases and strips Polish diacritics so "Żelazna" matches "zelazna". */
+export const normalizeText = (value: string) =>
+  value
+    .toLocaleLowerCase("pl")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/ł/g, "l");
 
 export function supportsArea(area: string, partnerArea: string) {
-  const normalize = (value: string) =>
-    value
-      .toLocaleLowerCase("pl")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/ł/g, "l");
-  const query = normalize(area);
+  const query = normalizeText(area);
   return partnerArea.split(",").some((value) => {
-    const name = normalize(value.trim());
+    const name = normalizeText(value.trim());
     return (
       name.length > 0 &&
       (query.includes(name) ||
@@ -221,18 +255,16 @@ export function filterCollectionPoints({
   query?: string;
   withHours?: boolean;
 }) {
-  const search = query.trim().toLocaleLowerCase("pl");
+  const search = normalizeText(query.trim());
+  // The demo catalogue covers only Warsaw, so a city-level query matches every point.
+  const wholeCity = !search || search.includes("warszawa");
   return points.filter(
     (point) =>
       point.category === category &&
       (type === "Wszystkie" || point.type === type) &&
       (material === "Wszystkie" || point.materials.includes(material)) &&
       (!withHours || Boolean(point.hours)) &&
-      (!search ||
-        search === "warszawa, centrum" ||
-        search === "warszawa" ||
-        `${point.name} ${point.address}`
-          .toLocaleLowerCase("pl")
-          .includes(search)),
+      (wholeCity ||
+        normalizeText(`${point.name} ${point.address}`).includes(search)),
   );
 }
