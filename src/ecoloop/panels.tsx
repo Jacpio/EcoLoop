@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Platform, Pressable, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Stat } from "./account";
-import { Electronic } from "./domain";
+import { Electronic, supportsArea } from "./domain";
 import { useEco } from "./store";
 import {
   Badge,
@@ -125,7 +125,12 @@ export function PartnerScreen() {
         EcoElectro.
       </Note>
       <Card wash style={{ padding: 10 }}>
-        <T size={13}>Obszar: {selected.area} ✓ — w zasięgu obsługi partnera</T>
+        <T size={13}>
+          Obszar: {selected.area}{" "}
+          {supportsArea(selected.area, state.partnerArea)
+            ? "✓ — w zasięgu obsługi partnera"
+            : "— poza obszarem obsługi partnera"}
+        </T>
       </Card>
       <T muted size={13}>
         {selected.note}

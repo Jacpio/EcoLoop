@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Pressable, Switch, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
 import { CollectionCard, OfferCard, Timeline } from "./blocks";
 import { useEco } from "./store";
 import {
@@ -487,7 +486,6 @@ export function Stat({
 export function UtilityScreen({ screen }: { screen: string }) {
   const { state, update, dialog, notify, reset } = useEco();
   const desktop = useDesktop();
-  const { section } = useLocalSearchParams<{ section?: string }>();
   const [area, setArea] = useState(state.preferences.area);
   const [radius, setRadius] = useState(state.preferences.radius);
   const [text, setText] = useState("");
@@ -759,11 +757,6 @@ export function UtilityScreen({ screen }: { screen: string }) {
               ich kupić ani wymienić.
             </Note>
           </>
-        )}
-        {section && (
-          <T muted size={13}>
-            {section}
-          </T>
         )}
         <Button ghost onPress={() => go("profile")}>
           ← Wróć do profilu

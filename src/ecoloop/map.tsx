@@ -348,6 +348,7 @@ export function MapScreen() {
 export function PointScreen() {
   const { id = "market" } = useLocalSearchParams<{ id?: string }>();
   const desktop = useDesktop();
+  const point = points.find((p) => p.id === id) || points[0];
   return (
     <Shell title="Szczegóły punktu">
       <View
@@ -364,14 +365,14 @@ export function PointScreen() {
             <View style={{ flex: 1 }}>
               <MapCanvas
                 height={540}
-                selected={id}
-                category={points.find((p) => p.id === id)?.category}
-                pointIds={[id]}
+                selected={point.id}
+                category={point.category}
+                pointIds={[point.id]}
               />
             </View>
           )}
           <View style={{ flex: 1 }}>
-            <PointDetails id={id} standalone />
+            <PointDetails id={point.id} standalone />
           </View>
         </View>
       </View>
