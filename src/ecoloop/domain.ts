@@ -21,8 +21,8 @@ export type Collection = Offer & {
   address: string;
   pin: string;
   returnPlace?: ReturnPlace;
-  /** Collector asked the machine to pay the deposit out by BLIK (demo). */
-  transfer?: boolean;
+  /** Number the machine should pay the deposit to by BLIK (demo); set = on. */
+  transferPhone?: string;
   problem?: string;
   actual?: number;
   returned?: number;
@@ -191,7 +191,9 @@ export function normalizePhone(value: string) {
   return match ? match[1] : null;
 }
 export const formatPhone = (digits: string) =>
-  digits ? `+48 ${digits.replace(/(\d{3})(?=\d)/g, "$1 ")}` : "";
+  /^\d{9}$/.test(digits)
+    ? `+48 ${digits.replace(/(\d{3})(?=\d)/g, "$1 ")}`
+    : digits;
 export const money = (value: number) =>
   `${Number(value.toFixed(2)).toLocaleString("pl-PL")} zł`;
 export const materialLabel = (material: Material) =>

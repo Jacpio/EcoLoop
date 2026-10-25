@@ -77,3 +77,10 @@ Przegląd całego kodu (`src/ecoloop`, trasy, mapa, stan, skrypty) oraz porówna
 - Podpisany build EAS. W `app.json` brak `android.package` i `ios.bundleIdentifier` — trzeba je ustalić zespołowo przed buildem sklepowym.
 - `npm audit --omit=dev`: nadal 5 alertów high w łańcuchu Expo CLI (`node-forge`, `zod`). Nie uruchamiano `npm audit fix --force`, bo proponuje obniżenie do Expo SDK 44.
 - Różnice względem Figmy, których świadomie nie zmieniano: plan odbiorów jako lista pogrupowana po dniach z sumą „32 zł / 16 zł”, oś czasu na kartach „Moje odbiory”, dane opiekuna odbioru (Michał K., ocena 4,9). Wersja desktopowa jest zgodna z ramkami.
+
+## Aktualizacja: BLIK i numer telefonu
+
+- Zakres: numer telefonu w ustawieniach, kafelek „Odbiór kaucji przelewem” (tylko zwrot w kaucjomacie), wybór „Gotówka lub BLIK” w ogłoszeniu z numerem widocznym dopiero po przyjęciu odbioru. To makieta: nie wykonuje przelewów, a prawdziwa wypłata z automatu wymaga współpracy z operatorem kaucjomatów.
+- `npm run verify`: lint i typecheck bez błędów, `npm test` 27/27 (nowe: normalizacja i formatowanie numeru, zapis numeru w stanie, odrzucanie błędnego numeru przy odczycie). Eksport web poprawny.
+- Przegląd po wdrożeniu poprawił: zniknięcie numeru z podsumowania, gdy użytkownik usunął go z ustawień po włączeniu przelewu (numer jest teraz zapisywany przy odbiorze), pozostawanie włączonego przelewu po zmianie miejsca zwrotu na punkt ręczny, linię „0 zł” po zwrocie bez przyjętych opakowań, wczytywanie uszkodzonego numeru z pamięci oraz tworzenie profilu demo tylko po to, by usunąć nieistniejący numer.
+- Nie wykonano przejścia tej ścieżki w przeglądarce ani na urządzeniu; sprawdzono kod, typy, testy jednostkowe i budowanie paczki. Ścieżkę (ustawienia → ogłoszenie z BLIK → przyjęcie → kafelek przy zwrocie) warto jeszcze przeklikać ręcznie.

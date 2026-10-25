@@ -16,6 +16,7 @@ import {
   Heading,
   Icon,
   Input,
+  LineDivider,
   Note,
   Row,
   Shell,
@@ -565,8 +566,10 @@ export function UtilityScreen({ screen }: { screen: string }) {
             >
               Zapisz preferencje
             </Button>
+            <LineDivider />
+            <T bold>Numer telefonu do BLIK</T>
             <Input
-              label="Numer telefonu do BLIK"
+              label="Numer telefonu"
               keyboardType="phone-pad"
               autoComplete="tel"
               value={phone}
@@ -595,6 +598,8 @@ export function UtilityScreen({ screen }: { screen: string }) {
                   return;
                 }
                 setPhoneError("");
+                // Nothing to clear without a profile; do not create one for it.
+                if (!state.user && !digits) return;
                 requireUser(() => {
                   update((s) => ({
                     ...s,

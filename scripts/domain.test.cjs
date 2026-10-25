@@ -207,4 +207,5 @@ test("Numer telefonu: akceptuje 9 cyfr z prefiksem lub separatorami, resztę odr
 test("Numer telefonu jest wyświetlany jako +48 XXX XXX XXX", () => {
   assert.equal(formatPhone("512345678"), "+48 512 345 678");
   assert.equal(formatPhone(""), "");
+  assert.equal(formatPhone("abc"), "abc");
 });

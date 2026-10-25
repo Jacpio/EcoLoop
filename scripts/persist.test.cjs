@@ -107,4 +107,9 @@ test("Numer telefonu użytkownika przeżywa zapis, a zły typ jest ignorowany", 
     defaults,
   );
   assert.deepEqual(badPhone.user, { name: "Anna", role: "Oddaję" });
+  const junkPhone = mergeSavedState(
+    saved({ user: { name: "Anna", role: "Oddaję", phone: "abc" } }),
+    defaults,
+  );
+  assert.deepEqual(junkPhone.user, { name: "Anna", role: "Oddaję" });
 });

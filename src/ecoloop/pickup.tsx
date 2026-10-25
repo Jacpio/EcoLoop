@@ -567,6 +567,13 @@ export function CollectionScreen() {
   });
   const userPhone = state.user?.phone;
   const toggleTransfer = () => {
+    if (collection.transferPhone)
+      return dialog({
+        title: "Odbiór kaucji przelewem",
+        body: `Przelew na ${formatPhone(collection.transferPhone)} jest włączony. Możesz go wyłączyć i odebrać kaucję w gotówce.`,
+        confirm: "Wyłącz przelew",
+        onConfirm: () => patch({ transferPhone: undefined }),
+      });
     if (!userPhone)
       return dialog({
         title: "Najpierw dodaj numer telefonu",
@@ -576,11 +583,9 @@ export function CollectionScreen() {
       });
     dialog({
       title: "Odbiór kaucji przelewem",
-      body: collection.transfer
-        ? `Przelew na ${formatPhone(userPhone)} jest włączony. Możesz go wyłączyć i odebrać kaucję w gotówce.`
-        : `Kaucja za butelki wrzucone do kaucjomatu (szac. ${money(settled.total)}) zostanie przelana BLIK-iem na numer ${formatPhone(userPhone)} od razu, gdy kaucjomat odbierze butelki i wszystko się przetworzy. Wersja demo: żadna płatność nie jest wykonywana, a funkcja wymaga współpracy z operatorem kaucjomatów.`,
-      confirm: collection.transfer ? "Wyłącz przelew" : "Włącz przelew",
-      onConfirm: () => patch({ transfer: !collection.transfer }),
+      body: `Kaucja za butelki wrzucone do kaucjomatu (szac. ${money(settled.total)}) zostanie przelana BLIK-iem na numer ${formatPhone(userPhone)} od razu, gdy kaucjomat odbierze butelki i wszystko się przetworzy. Wersja demo: żadna płatność nie jest wykonywana, a funkcja wymaga współpracy z operatorem kaucjomatów.`,
+      confirm: "Włącz przelew",
+      onConfirm: () => patch({ transferPhone: userPhone }),
     });
   };
   const complete = () =>
@@ -699,9 +704,11 @@ export function CollectionScreen() {
                 options={["Kaucjomat", "Punkt ręczny"]}
                 value={place === "automat" ? "Kaucjomat" : "Punkt ręczny"}
                 onChange={(option) =>
-                  patch({
-                    returnPlace: option === "Kaucjomat" ? "automat" : "ręczny",
-                  })
+                  patch(
+                    option === "Kaucjomat"
+                      ? { returnPlace: "automat" }
+                      : { returnPlace: "ręczny", transferPhone: undefined },
+                  )
                 }
               />
               {place === "automat" && (
@@ -720,13 +727,13 @@ export function CollectionScreen() {
                       <T bold size={17}>
                         Odbiór kaucji przelewem
                       </T>
-                      <Badge green={!!collection.transfer}>
-                        {collection.transfer ? "Włączony" : "Demo"}
+                      <Badge green={!!collection.transferPhone}>
+                        {collection.transferPhone ? "Włączony" : "Demo"}
                       </Badge>
                     </Row>
                     <T size={14}>
-                      {collection.transfer
-                        ? `BLIK na ${formatPhone(userPhone ?? "")} po przetworzeniu butelek.`
+                      {collection.transferPhone
+                        ? `BLIK na ${formatPhone(collection.transferPhone)} po przetworzeniu butelek.`
                         : "Zamiast gotówki dostaniesz BLIK-a na telefon. Dotknij, aby zobaczyć szczegóły."}
                     </T>
                   </Card>
@@ -750,9 +757,9 @@ export function CollectionScreen() {
                 }}
                 full={false}
               />
-              {collection.transfer && collection.returnPlace !== "ręczny" && (
+              {collection.transferPhone && settled.total > 0 && (
                 <T size={14}>
-                  Kaucja BLIK-iem na {formatPhone(userPhone ?? "")} (
+                  Kaucja BLIK-iem na {formatPhone(collection.transferPhone)} (
                   {money(settled.total)}).
                 </T>
               )}
