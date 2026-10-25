@@ -11,7 +11,7 @@ npm install
 npm start
 ```
 
-W terminalu Expo wybierz `w`, aby otworzyć wersję webową, lub zeskanuj QR kompatybilną wersją Expo Go. Projekt korzysta z Expo SDK 58. Można też uruchomić `npm run web`.
+W terminalu Expo wybierz `w`, aby otworzyć wersję webową, lub zeskanuj QR kompatybilną wersją Expo Go. Projekt korzysta z Expo SDK 58. Można też uruchomić `npm run web`. Wymagany jest Node.js 22 lub nowszy (testy jednostkowe ładują pliki `.ts` bezpośrednio).
 
 ## Ekrany i ścieżki
 
@@ -37,16 +37,18 @@ Mapa korzysta z Leaflet 1.9.4 i kafelków `https://tile.openstreetmap.org/{z}/{x
 
 Dane demonstracyjne można przywrócić w Profil → Prywatność i dane → Usuń moje dane demo. Odświeżenie aplikacji po tej operacji ponownie pokaże onboarding mobilny.
 
+Zapisany stan jest przy starcie sprawdzany pole po polu (`src/ecoloop/persist.ts`): uszkodzone lub starsze dane nie wywracają aplikacji, a brakujące pola dostają wartości domyślne. Termin nowego ogłoszenia domyślnie wskazuje dzisiejszy dzień i nie może leżeć w przeszłości. Zdjęcia na webie są przed zapisem zmniejszane do 1024 px, bo cały stan trafia do jednego klucza `localStorage` (ok. 5 MB); na Androidzie i iOS zapisywany jest tylko adres pliku.
+
 ## Sprawdzenie projektu
 
 ```sh
-npm run lint
-npm run typecheck
-npm run test:map
-npx expo export --platform all --output-dir /tmp/ecoloop-build
+npm run verify          # lint + typecheck + testy jednostkowe
+npm test                # same testy (mapa, kalkulator i daty, zapis stanu)
+npx expo export --platform all --output-dir dist
+npx expo-doctor
 ```
 
-Kontrola obejmuje TypeScript, ESLint, produkcyjne paczki web/Android/iOS i przejście głównych ścieżek w przeglądarce. Test układu mobilnego w przeglądarce nie zastępuje uruchomienia na rzeczywistym urządzeniu.
+Kontrola obejmuje TypeScript, ESLint, testy jednostkowe, produkcyjne paczki web/Android/iOS i diagnostykę zależności. To samo (poza eksportem) uruchamia GitHub Actions (`.github/workflows/ci.yml`) dla każdego pull requesta. Przejście głównych ścieżek w przeglądarce jest opisane w `docs/WERYFIKACJA.md`. Test układu mobilnego w przeglądarce nie zastępuje uruchomienia na rzeczywistym urządzeniu.
 
 ## Materiały
 

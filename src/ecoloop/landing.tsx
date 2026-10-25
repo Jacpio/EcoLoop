@@ -27,6 +27,7 @@ import {
   useDesktop,
 } from "./ui";
 import { OfferCard, PointCard } from "./blocks";
+import { vocative } from "./domain";
 
 export { Onboarding } from "./onboarding";
 
@@ -45,21 +46,31 @@ export function Home() {
 function MobileHome() {
   const { state } = useEco();
   return (
-    <Shell title={`Cześć, ${state.user?.name.split(" ")[0] || "Anno"}!`}>
+    <Shell title={`Cześć, ${vocative(state.user?.name.split(" ")[0] || "Anna")}!`}>
       <Col>
-        <Row style={{ alignItems: "center" }}>
-          <Icon name="pin" size={15} />
-          <T size={13} muted>
-            Warszawa, Centrum · obok zielony
-          </T>
-        </Row>
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel="Zmień okolicę"
+          onPress={() => go("preferences")}
+        >
+          <Row style={{ alignItems: "center" }}>
+            <Icon name="pin" size={15} />
+            <T size={13} muted>
+              {state.preferences.area} · zmień okolicę
+            </T>
+          </Row>
+        </Pressable>
         <Row>
-          <Button style={{ flex: 1 }} icon="pin" onPress={() => go("map")}>
+          <Button
+            style={{ flex: 1.3, paddingHorizontal: 12 }}
+            icon="pin"
+            onPress={() => go("map")}
+          >
             Znajdź kaucjomat
           </Button>
           <Button
             secondary
-            style={{ flex: 1 }}
+            style={{ flex: 1, paddingHorizontal: 12 }}
             icon="plus"
             onPress={() => go("create")}
           >

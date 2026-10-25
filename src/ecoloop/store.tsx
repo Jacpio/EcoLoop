@@ -12,12 +12,15 @@ import {
 } from "react-native";
 import {
   Collection,
+  createDraft,
   Electronic,
-  initialDraft,
+  formatDatePl,
+  isPastDate,
   initialElectronics,
   initialOffers,
   Offer,
 } from "./domain";
+import { mergeSavedState, STORAGE_KEY } from "./persist";
 
 export type Report = {
   id: string;
@@ -42,14 +45,14 @@ type State = {
   partnerArea: string;
   partnerHours: string;
 };
-const initialState: State = {
+const createInitialState = (): State => ({
   onboarded: false,
   user: null,
   offers: initialOffers,
   collections: [],
   electronics: initialElectronics,
   pointStatus: {},
-  draft: initialDraft,
+  draft: createDraft(),
   notifications: false,
   ecoPoints: 1250,
   preferences: { area: "Warszawa, Centrum", radius: "3 km" },
@@ -89,7 +92,7 @@ const initialState: State = {
       note: "Uzupełnij dane punktu.",
     },
   ],
-};
+});
 type Dialog = {
   title: string;
   body: string;
@@ -109,11 +112,16 @@ export type Context = {
   requireUser: (action: () => void) => void;
 };
 
-const STORAGE_KEY = "ecoloop-demo-v1";
 export function EcoProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState(initialState);
+  const [state, setState] = useState(createInitialState);
   const [ready, setReady] = useState(false);
-  const [activeDialog, setDialog] = useState<Dialog | null>(null);
+  // The text stays after closing so the fade-out animation does not flash an empty box.
+  const [activeDialog, setActiveDialog] = useState<Dialog | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const setDialog = (next: Dialog | null) => {
+    if (next) setActiveDialog(next);
+    setDialogOpen(!!next);
+  };
   const [value, setValue] = useState("");
   const [toast, setToast] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -122,14 +130,18 @@ export function EcoProvider({ children }: { children: React.ReactNode }) {
       .then((raw) => {
         if (raw) {
           try {
-            const saved = JSON.parse(raw);
-            if (
-              Array.isArray(saved.offers) &&
-              Array.isArray(saved.collections) &&
-              Array.isArray(saved.electronics) &&
-              Array.isArray(saved.reports)
-            )
-              setState({ ...initialState, ...saved });
+            const restored = mergeSavedState(
+              JSON.parse(raw),
+              createInitialState(),
+            );
+            // A draft saved on an earlier day must not keep a past pickup date.
+            if (restored)
+              setState({
+                ...restored,
+                draft: isPastDate(restored.draft.date)
+                  ? { ...restored.draft, date: formatDatePl(new Date()) }
+                  : restored.draft,
+              });
           } catch {
             /* Recover from corrupt local demo data. */
           }
@@ -185,7 +197,7 @@ export function EcoProvider({ children }: { children: React.ReactNode }) {
         update: setState,
         dialog,
         notify,
-        reset: () => setState(initialState),
+        reset: () => setState(createInitialState()),
         requireUser,
       }}
     >
@@ -212,7 +224,7 @@ export function EcoProvider({ children }: { children: React.ReactNode }) {
         </Pressable>
       )}
       <Modal
-        visible={!!activeDialog}
+        visible={dialogOpen}
         transparent
         animationType="fade"
         onRequestClose={() => setDialog(null)}

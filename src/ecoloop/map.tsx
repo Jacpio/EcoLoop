@@ -101,176 +101,202 @@ export function MapScreen() {
       setLocating(false);
     }
   };
-  const filters = (
-    <Col
-      style={
-        desktop
-          ? {
-              width: 310,
-              padding: 22,
-              backgroundColor: C.paper,
-              borderRightWidth: 1,
-              borderColor: C.line,
-            }
-          : {}
-      }
-    >
-      <Row style={{ justifyContent: "space-between", alignItems: "center" }}>
+  const categoryPicker = (
+    <Col style={{ gap: 8, flexDirection: desktop ? "column" : "row" }}>
+      {(
+        [
+          {
+            id: "packaging",
+            icon: "recycle",
+            title: "Butelki i puszki",
+            description: "Kaucjomaty i ręczny zwrot kaucji",
+            color: C.brand,
+            background: C.pink,
+          },
+          {
+            id: "electronics",
+            icon: "plug",
+            title: "Elektronika",
+            description: "Osobne punkty uprawnionych odbiorców",
+            color: C.electro,
+            background: C.electroBg,
+          },
+        ] as const
+      ).map((item) => (
+        <Pressable
+          key={item.id}
+          accessibilityRole="tab"
+          accessibilityLabel={item.title}
+          accessibilityState={{ selected: category === item.id }}
+          onPress={() => changeCategory(item.id)}
+          style={{
+            flex: desktop ? undefined : 1,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+            borderWidth: 1,
+            borderColor: category === item.id ? item.color : C.line,
+            backgroundColor: category === item.id ? item.background : C.paper,
+            borderRadius: 11,
+            padding: desktop ? 13 : 11,
+          }}
+        >
+          <Icon name={item.icon} color={item.color} size={desktop ? 23 : 20} />
+          <Col style={{ gap: 1, flex: 1 }}>
+            <T
+              bold
+              size={desktop ? 16 : 14}
+              color={category === item.id ? item.color : C.ink}
+            >
+              {item.title}
+            </T>
+            {desktop && (
+              <T size={11} muted>
+                {item.description}
+              </T>
+            )}
+          </Col>
+          {category === item.id && desktop && (
+            <Icon name="check" color={item.color} size={17} />
+          )}
+        </Pressable>
+      ))}
+    </Col>
+  );
+  const searchField = (
+    <Input
+      label="Miasto lub nazwa punktu"
+      value={query}
+      onChangeText={(value) => {
+        setQuery(value);
+        setSelected(null);
+      }}
+      icon="search"
+    />
+  );
+  const locateButton = (
+    <Button secondary icon="target" disabled={locating} onPress={locate}>
+      {locating ? "Ustalam lokalizację…" : "Użyj mojej lokalizacji"}
+    </Button>
+  );
+  const kindFilters =
+    category === "packaging" ? (
+      <>
+        <T bold size={14}>
+          Rodzaj punktu zwrotu
+        </T>
+        <Chips
+          options={["Wszystkie", "Automat", "Ręczny"]}
+          value={type}
+          onChange={(value) => {
+            setType(value);
+            setSelected(null);
+          }}
+        />
+        <T bold size={14}>
+          Opakowania kaucyjne
+        </T>
+        <Chips
+          options={["Wszystkie", "Butelki PET", "Puszki", "Szkło"]}
+          value={material}
+          onChange={(value) => {
+            setMaterial(value);
+            setSelected(null);
+          }}
+        />
         {desktop && (
-          <T bold size={27}>
-            Znajdź punkt
+          <T size={12} muted>
+            Elektronika nie trafia do kaucjomatu. Wybierz osobny widok
+            „Elektronika”.
           </T>
         )}
+      </>
+    ) : (
+      <Note>
+        Elektroodpady oddajesz uprawnionemu odbiorcy. Te punkty nie przyjmują
+        butelek ani puszek w ramach zwrotu kaucji.
+      </Note>
+    );
+  const todayToggle = (
+    <Pressable
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: today }}
+      onPress={() => setToday(!today)}
+    >
+      <Row style={{ alignItems: "center", gap: 8 }}>
+        <View
+          style={{
+            height: 19,
+            width: 19,
+            borderWidth: 1,
+            borderColor: today ? C.brand : C.line,
+            borderRadius: 4,
+            backgroundColor: today ? C.brand : C.paper,
+          }}
+        >
+          {today && <Icon name="check" size={16} color={C.paper} />}
+        </View>
+        <T size={13} muted>
+          Pokaż punkty z podanymi godzinami
+        </T>
+      </Row>
+    </Pressable>
+  );
+  const count = (
+    <T>
+      {filtered.length} {filtered.length === 1 ? "punkt" : "punkty"} ·{" "}
+      {category === "packaging" ? "zwrot opakowań" : "elektronika"}
+    </T>
+  );
+  // Desktop: one sidebar. Mobile: search and kind filters, then the map, then the rest.
+  const filters = (
+    <Col
+      style={{
+        width: 310,
+        padding: 22,
+        backgroundColor: C.paper,
+        borderRightWidth: 1,
+        borderColor: C.line,
+      }}
+    >
+      <Row style={{ justifyContent: "space-between", alignItems: "center" }}>
+        <T bold size={27}>
+          Znajdź punkt
+        </T>
         <Badge green>Bez logowania</Badge>
       </Row>
       <T bold size={14}>
         Co chcesz oddać?
       </T>
-      <Col style={{ gap: 8 }}>
-        {(
-          [
-            {
-              id: "packaging",
-              icon: "recycle",
-              title: "Butelki i puszki",
-              description: "Kaucjomaty i ręczny zwrot kaucji",
-              color: C.brand,
-              background: C.pink,
-            },
-            {
-              id: "electronics",
-              icon: "plug",
-              title: "Elektronika",
-              description: "Osobne punkty uprawnionych odbiorców",
-              color: C.electro,
-              background: C.electroBg,
-            },
-          ] as const
-        ).map((item) => (
-          <Pressable
-            key={item.id}
-            accessibilityRole="tab"
-            accessibilityLabel={item.title}
-            accessibilityState={{ selected: category === item.id }}
-            onPress={() => changeCategory(item.id)}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 10,
-              borderWidth: 1,
-              borderColor: category === item.id ? item.color : C.line,
-              backgroundColor: category === item.id ? item.background : C.paper,
-              borderRadius: 11,
-              padding: 13,
-            }}
-          >
-            <Icon name={item.icon} color={item.color} size={23} />
-            <Col style={{ gap: 1, flex: 1 }}>
-              <T
-                bold
-                size={16}
-                color={category === item.id ? item.color : C.ink}
-              >
-                {item.title}
-              </T>
-              <T size={11} muted>
-                {item.description}
-              </T>
-            </Col>
-            {category === item.id && (
-              <Icon name="check" color={item.color} size={17} />
-            )}
-          </Pressable>
-        ))}
-      </Col>
-      <Input
-        label="Miasto lub nazwa punktu"
-        value={query}
-        onChangeText={(value) => {
-          setQuery(value);
-          setSelected(null);
-        }}
-        icon="search"
-      />
-      <Button secondary icon="target" disabled={locating} onPress={locate}>
-        {locating ? "Ustalam lokalizację…" : "Użyj mojej lokalizacji"}
-      </Button>
-      {category === "packaging" ? (
-        <>
-          <T bold size={14}>
-            Rodzaj punktu zwrotu
-          </T>
-          <Chips
-            options={["Wszystkie", "Automat", "Ręczny"]}
-            value={type}
-            onChange={(value) => {
-              setType(value);
-              setSelected(null);
-            }}
-          />
-          <T bold size={14}>
-            Opakowania kaucyjne
-          </T>
-          <Chips
-            options={["Wszystkie", "Butelki PET", "Puszki", "Szkło"]}
-            value={material}
-            onChange={(value) => {
-              setMaterial(value);
-              setSelected(null);
-            }}
-          />
-          <T size={12} muted>
-            Elektronika nie trafia do kaucjomatu. Wybierz osobny widok
-            „Elektronika”.
-          </T>
-        </>
-      ) : (
-        <Note>
-          Elektroodpady oddajesz uprawnionemu odbiorcy. Te punkty nie przyjmują
-          butelek ani puszek w ramach zwrotu kaucji.
-        </Note>
-      )}
-      <Pressable
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: today }}
-        onPress={() => setToday(!today)}
-      >
-        <Row style={{ alignItems: "center", gap: 8 }}>
-          <View
-            style={{
-              height: 19,
-              width: 19,
-              borderWidth: 1,
-              borderColor: today ? C.brand : C.line,
-              borderRadius: 4,
-              backgroundColor: today ? C.brand : C.paper,
-            }}
-          >
-            {today && <Icon name="check" size={16} color={C.paper} />}
-          </View>
-          <T size={13} muted>
-            Pokaż punkty z podanymi godzinami
-          </T>
-        </Row>
-      </Pressable>
+      {categoryPicker}
+      {searchField}
+      {locateButton}
+      {kindFilters}
+      {todayToggle}
       <LineDivider />
-      <T>
-        {filtered.length} {filtered.length === 1 ? "punkt" : "punkty"} ·{" "}
-        {category === "packaging" ? "zwrot opakowań" : "elektronika"}
-      </T>
-      {desktop &&
-        filtered.map((point) => (
-          <PointCard
-            key={point.id}
-            id={point.id}
-            onPress={() => choose(point.id)}
-          />
-        ))}
-      {desktop && !filtered.length && (
+      {count}
+      {filtered.map((point) => (
+        <PointCard
+          key={point.id}
+          id={point.id}
+          onPress={() => choose(point.id)}
+        />
+      ))}
+      {!filtered.length && (
         <T muted size={14}>
           Brak punktów dla tych filtrów. Zmień rodzaj punktu lub okolicę.
         </T>
       )}
+    </Col>
+  );
+  const mobileTop = (
+    <Col>
+      <Row style={{ justifyContent: "space-between", alignItems: "center" }}>
+        <Badge green>Bez logowania</Badge>
+      </Row>
+      {categoryPicker}
+      {searchField}
+      {kindFilters}
     </Col>
   );
   return (
@@ -282,7 +308,7 @@ export function MapScreen() {
           gap: desktop ? 0 : 16,
         }}
       >
-        {filters}
+        {desktop ? filters : mobileTop}
         <Col style={desktop ? { flex: 1, padding: 26 } : {}}>
           {desktop && (
             <Heading
@@ -323,6 +349,9 @@ export function MapScreen() {
           </T>
           {!desktop && (
             <>
+              {locateButton}
+              {todayToggle}
+              {count}
               {filtered.map((p) => (
                 <PointCard key={p.id} id={p.id} />
               ))}
@@ -348,6 +377,7 @@ export function MapScreen() {
 export function PointScreen() {
   const { id = "market" } = useLocalSearchParams<{ id?: string }>();
   const desktop = useDesktop();
+  const point = points.find((p) => p.id === id) || points[0];
   return (
     <Shell title="Szczegóły punktu">
       <View
@@ -364,14 +394,14 @@ export function PointScreen() {
             <View style={{ flex: 1 }}>
               <MapCanvas
                 height={540}
-                selected={id}
-                category={points.find((p) => p.id === id)?.category}
-                pointIds={[id]}
+                selected={point.id}
+                category={point.category}
+                pointIds={[point.id]}
               />
             </View>
           )}
           <View style={{ flex: 1 }}>
-            <PointDetails id={id} standalone />
+            <PointDetails id={point.id} standalone />
           </View>
         </View>
       </View>
@@ -491,7 +521,7 @@ export function PointDetails({
           )
         }
       >
-        Nawiguj
+        Nawiguj do {point.name.split(" – ").pop()}
       </Button>
       {electronics ? (
         <>

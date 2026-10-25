@@ -257,7 +257,7 @@ export function Button({
       }
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed, hovered }) => [
+      style={(state) => [
         s.button,
         {
           minHeight: small ? 36 : 48,
@@ -268,9 +268,11 @@ export function Button({
               ? "transparent"
               : C.brand,
           borderColor: ghost ? "transparent" : secondary ? C.line : C.brand,
-          opacity: disabled ? 0.45 : pressed ? 0.7 : 1,
+          opacity: disabled ? 0.45 : state.pressed ? 0.7 : 1,
         },
-        hovered && !disabled && { borderColor: C.brand },
+        // `hovered` is provided by react-native-web only, so it is absent from the native types.
+        (state as { hovered?: boolean }).hovered &&
+          !disabled && { borderColor: C.brand },
         style,
       ]}
     >
