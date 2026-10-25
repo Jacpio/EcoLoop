@@ -60,14 +60,16 @@ Przegląd całego kodu (`src/ecoloop`, trasy, mapa, stan, skrypty) oraz porówna
 | Partner | „✓ w zasięgu obsługi” zawsze zielone | Wynik `supportsArea` |
 | Punkt | Nieznany `?id=` dawał pustą mapę i kartę Market Centrum | Jeden, spójny punkt |
 | Mobile (Figma) | Przycisk „Znajdź kaucjomat” zawijał się; „obok zielony” zamiast „zmień okolicę”; kwota powtórzona na karcie; mapa pod dwoma ekranami filtrów | Dopasowane do ramek |
+| Powitanie | „Cześć, Anna!” zamiast wołacza z ramek („Anno”); „dziś” małą literą na początku linii | `vocative`, `upperFirst` |
+| Szkic | Zapisany szkic z wczorajszą datą byłby odrzucany przez nową walidację dat | Przeterminowana data jest zastępowana dzisiejszą przy odczycie |
 
 ### Wyniki po zmianach
 
 - `npm run lint`, `npm run typecheck`: bez błędów i ostrzeżeń.
-- `npm test`: 23/23 (mapa 5, kalkulator/daty/wyszukiwanie 12, zapis stanu 6).
+- `npm test`: 24/24 (mapa 5, kalkulator/daty/wyszukiwanie/powitanie 13, zapis stanu 6), także pod Node 22, którego używa CI. `typecheck` i `lint` przechodzą również bez plików generowanych przez `expo start` (`expo-env.d.ts`, `.expo/`), czyli tak jak w CI.
 - `npx expo export --platform all`: poprawny (iOS, Android, web + render serwerowy). `npx expo-doctor`: 20/20.
-- Przeglądarka (Chromium przez Playwright, mobile 390 px i desktop 1440 px, dev serwer `expo start --web`), 18 scenariuszy, wszystkie zaliczone, bez błędów JavaScript w konsoli (pominięto jedynie komunikaty o niedostępnych kafelkach mapy):
-  onboarding i rejestracja z walidacją; `/create?step=3` ze złym szkicem; data z przeszłości i nieistniejąca; publikacja i reset szkicu; korekta dla EL-1043 (domyślnie 20, limit 24); pełny odbiór EL-1042 (litery w PIN, 0000 odrzucony, 7429, korekta 40→36, zakończenie, podział 9 zł + 9 zł, zamknięte adresy `/problem`, `/shortage`, `/rejected`); odrzucenie ograniczone do przyjętej liczby; anulowanie i ponowne przyjęcie; odczyt starego i uszkodzonego zapisu; „Usuń moje dane demo”; wyszukiwanie mapy (`zelazna`, ulica + miasto, przełączanie kategorii); zgłoszenie elektroniki z obszarem; zgłoszenie punktu do panelu admina; brak pustego okna przy zamykaniu dialogu; zdjęcie 11,6 MB → 242 KB po odświeżeniu; 16 tras desktopowych renderuje się bez „Nie znaleziono strony”, a 17 tras mobilnych (w tym nieznany punkt i nieistniejąca strona) bez poziomego przewijania.
+- Przeglądarka (Chromium przez Playwright, mobile 390 px i desktop 1440 px, dev serwer `expo start --web`), 20 scenariuszy, wszystkie zaliczone w jednym przebiegu na końcowym kodzie, bez błędów w konsoli (pomijane są wyłącznie błędy żądań do `tile.openstreetmap.org`):
+  onboarding i rejestracja z walidacją; `/create?step=3` ze złym szkicem; data z przeszłości i nieistniejąca; publikacja i reset szkicu; korekta dla EL-1043 (domyślnie 20, limit 24); pełny odbiór EL-1042 (litery w PIN, 0000 odrzucony, 7429, korekta 40→36, zakończenie, podział 9 zł + 9 zł, zamknięte adresy `/problem`, `/shortage`, `/rejected`); odrzucenie ograniczone do przyjętej liczby; anulowanie i ponowne przyjęcie; odczyt starego i uszkodzonego zapisu; „Usuń moje dane demo”; wyszukiwanie mapy (`zelazna`, ulica + miasto, przełączanie kategorii); zgłoszenie elektroniki z obszarem; zgłoszenie punktu do panelu admina; brak pustego okna przy zamykaniu dialogu; zdjęcie 11,6 MB → 242 KB po odświeżeniu; przeterminowana data zapisanego szkicu zastępowana dzisiejszą; powitanie „Cześć, Anno!”; 16 tras desktopowych renderuje się bez „Nie znaleziono strony”, a 17 tras mobilnych (w tym nieznany punkt i nieistniejąca strona) bez poziomego przewijania.
 
 ### Czego nie sprawdzono
 
