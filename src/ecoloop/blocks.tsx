@@ -91,6 +91,7 @@ export function OfferCard({
       <T muted size={13}>
         Kaucja szac. {money(amounts.total)} · Twój udział {offer.share}%
       </T>
+      {offer.blik && <Badge green>Gotówka lub BLIK</Badge>}
       {compact && (
         <T size={14}>
           {upperFirst(relativeDay(offer.date))}, {offer.time}
@@ -320,6 +321,7 @@ export function OfferSummary({ offer }: { offer: Offer }) {
         {offer.area} · {offer.date}, {offer.time}
       </T>
       <T muted>{offer.note}</T>
+      {offer.blik && <T muted size={13}>Rozliczenie: gotówka lub BLIK.</T>}
     </Card>
   );
 }

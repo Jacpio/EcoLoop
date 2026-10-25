@@ -32,7 +32,7 @@ export type Report = {
 };
 type State = {
   onboarded: boolean;
-  user: { name: string; role: string } | null;
+  user: { name: string; role: string; phone?: string } | null;
   offers: Offer[];
   collections: Collection[];
   electronics: Electronic[];
