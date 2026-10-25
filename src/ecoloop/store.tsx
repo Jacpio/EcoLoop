@@ -113,7 +113,13 @@ export type Context = {
 export function EcoProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState(createInitialState);
   const [ready, setReady] = useState(false);
-  const [activeDialog, setDialog] = useState<Dialog | null>(null);
+  // The text stays after closing so the fade-out animation does not flash an empty box.
+  const [activeDialog, setActiveDialog] = useState<Dialog | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const setDialog = (next: Dialog | null) => {
+    if (next) setActiveDialog(next);
+    setDialogOpen(!!next);
+  };
   const [value, setValue] = useState("");
   const [toast, setToast] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -209,7 +215,7 @@ export function EcoProvider({ children }: { children: React.ReactNode }) {
         </Pressable>
       )}
       <Modal
-        visible={!!activeDialog}
+        visible={dialogOpen}
         transparent
         animationType="fade"
         onRequestClose={() => setDialog(null)}
