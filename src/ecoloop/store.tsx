@@ -32,7 +32,7 @@ export type Report = {
 };
 type State = {
   onboarded: boolean;
-  user: { name: string; role: string; phone?: string } | null;
+  user: { name: string; role: string } | null;
   offers: Offer[];
   collections: Collection[];
   electronics: Electronic[];
@@ -41,7 +41,7 @@ type State = {
   draft: Offer;
   notifications: boolean;
   ecoPoints: number;
-  preferences: { area: string; radius: string };
+  preferences: { area: string; radius: string; phone: string };
   partnerArea: string;
   partnerHours: string;
 };
@@ -55,7 +55,7 @@ const createInitialState = (): State => ({
   draft: createDraft(),
   notifications: false,
   ecoPoints: 1250,
-  preferences: { area: "Warszawa, Centrum", radius: "3 km" },
+  preferences: { area: "Warszawa, Centrum", radius: "3 km", phone: "" },
   partnerArea: "Śródmieście, Wola, Mokotów",
   partnerHours: "Pon.–pt. 08:00–16:00",
   reports: [

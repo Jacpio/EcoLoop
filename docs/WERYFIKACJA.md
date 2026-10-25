@@ -83,4 +83,14 @@ Przegląd całego kodu (`src/ecoloop`, trasy, mapa, stan, skrypty) oraz porówna
 - Zakres: numer telefonu w ustawieniach, kafelek „Odbiór kaucji przelewem” (tylko zwrot w kaucjomacie), wybór „Gotówka lub BLIK” w ogłoszeniu z numerem widocznym dopiero po przyjęciu odbioru. To makieta: nie wykonuje przelewów, a prawdziwa wypłata z automatu wymaga współpracy z operatorem kaucjomatów.
 - `npm run verify`: lint i typecheck bez błędów, `npm test` 27/27 (nowe: normalizacja i formatowanie numeru, zapis numeru w stanie, odrzucanie błędnego numeru przy odczycie). Eksport web poprawny.
 - Przegląd po wdrożeniu poprawił: zniknięcie numeru z podsumowania, gdy użytkownik usunął go z ustawień po włączeniu przelewu (numer jest teraz zapisywany przy odbiorze), pozostawanie włączonego przelewu po zmianie miejsca zwrotu na punkt ręczny, linię „0 zł” po zwrocie bez przyjętych opakowań, wczytywanie uszkodzonego numeru z pamięci oraz tworzenie profilu demo tylko po to, by usunąć nieistniejący numer.
-- Nie wykonano przejścia tej ścieżki w przeglądarce ani na urządzeniu; sprawdzono kod, typy, testy jednostkowe i budowanie paczki. Ścieżkę (ustawienia → ogłoszenie z BLIK → przyjęcie → kafelek przy zwrocie) warto jeszcze przeklikać ręcznie.
+- Ścieżka BLIK (ustawienia → ogłoszenie z BLIK → przyjęcie → kafelek przy zwrocie → zakończenie) została przejęta w przeglądarce, zob. niżej. Nie sprawdzano jej na fizycznym urządzeniu.
+
+## Aktualizacja: test w działającej aplikacji
+
+Aplikacja (Expo web) była uruchamiana lokalnie i sterowana z headless Chromium (Playwright), w widoku mobilnym 390 px i desktopowym 1280 px.
+
+- Przegląd tras: 32 trasy × 2 szerokości = 64 widoki, bez błędów konsoli, bez przepełnienia poziomego i bez pustych ekranów.
+- Scenariusze: BLIK od początku do końca; filtry i wyszukiwanie odbiorów, PIN (zły, litery, 7429); walidacja ogłoszenia (ilość, data, godziny), rejestracja, filtry mapy, formularz elektroniki z kontrolą obszaru, zmiana statusu w panelu administratora; pełny cykl odbioru (korekta 40 → 36 = 18 zł → 9 + 9 zł, zakończenie, zamknięty odbiór, historia); profil, powiadomienia, zgłoszenie nadużycia, status punktu, usunięcie danych demo, wylogowanie.
+- Znalezione i naprawione: puste pole w korekcie ilości zapisywało 0 opakowań (`Number("")`), numer telefonu znikał po wylogowaniu i wymagał profilu demo do zapisu (teraz jest w preferencjach), karta własnego ogłoszenia nie pokazywała BLIK.
+- Pozostaje bez zmian, zachowanie sprzed BLIK: „Przyjmij odbiór” dokłada na stos kolejną kopię tego samego ekranu.
+- Nie sprawdzano: fizycznego urządzenia, GPS, wyboru zdjęć z dysku.

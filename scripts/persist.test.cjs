@@ -13,7 +13,7 @@ const defaults = {
   draft: { id: "", quantity: 40, share: 50, date: "25.10.2026" },
   notifications: false,
   ecoPoints: 1250,
-  preferences: { area: "Warszawa, Centrum", radius: "3 km" },
+  preferences: { area: "Warszawa, Centrum", radius: "3 km", phone: "" },
   partnerArea: "Śródmieście",
   partnerHours: "Pon.–pt. 08:00–16:00",
 };
@@ -64,7 +64,11 @@ test("Pola ze złym typem są ignorowane, a poprawne zachowane", () => {
   assert.equal(result.ecoPoints, 1250);
   assert.equal(result.user, null);
   assert.deepEqual(result.pointStatus, { market: "Awaria" });
-  assert.deepEqual(result.preferences, { area: "Wola", radius: "3 km" });
+  assert.deepEqual(result.preferences, {
+    area: "Wola",
+    radius: "3 km",
+    phone: "",
+  });
 });
 
 test("Zapisany użytkownik i szkic są przywracane, a szkic dopełniany domyślnymi", () => {
@@ -92,24 +96,31 @@ test("Wylogowanie (user: null) jest zachowane po odświeżeniu", () => {
   assert.equal(result.user, null);
 });
 
-test("Numer telefonu użytkownika przeżywa zapis, a zły typ jest ignorowany", () => {
+test("Numer telefonu w preferencjach przeżywa zapis, a śmieci są odrzucane", () => {
   const withPhone = mergeSavedState(
-    saved({ user: { name: "Anna", role: "Oddaję", phone: "512345678" } }),
+    saved({ preferences: { area: "Wola", radius: "5 km", phone: "512345678" } }),
     defaults,
   );
-  assert.deepEqual(withPhone.user, {
-    name: "Anna",
-    role: "Oddaję",
-    phone: "512345678",
-  });
-  const badPhone = mergeSavedState(
-    saved({ user: { name: "Anna", role: "Oddaję", phone: 512345678 } }),
+  assert.equal(withPhone.preferences.phone, "512345678");
+  for (const phone of ["abc", "12345", "5123456789", 512345678])
+    assert.equal(
+      mergeSavedState(saved({ preferences: { phone } }), defaults).preferences
+        .phone,
+      "",
+      String(phone),
+    );
+  const legacy = mergeSavedState(
+    saved({ preferences: { area: "Wola", radius: "5 km" } }),
     defaults,
   );
-  assert.deepEqual(badPhone.user, { name: "Anna", role: "Oddaję" });
-  const junkPhone = mergeSavedState(
-    saved({ user: { name: "Anna", role: "Oddaję", phone: "abc" } }),
+  assert.equal(legacy.preferences.phone, "");
+});
+
+test("Wylogowanie nie usuwa numeru telefonu z preferencji", () => {
+  const result = mergeSavedState(
+    saved({ user: null, preferences: { phone: "512345678" } }),
     defaults,
   );
-  assert.deepEqual(junkPhone.user, { name: "Anna", role: "Oddaję" });
+  assert.equal(result.user, null);
+  assert.equal(result.preferences.phone, "512345678");
 });

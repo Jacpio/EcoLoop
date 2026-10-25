@@ -486,11 +486,11 @@ export function Stat({
   );
 }
 export function UtilityScreen({ screen }: { screen: string }) {
-  const { state, update, dialog, notify, reset, requireUser } = useEco();
+  const { state, update, dialog, notify, reset } = useEco();
   const desktop = useDesktop();
   const [area, setArea] = useState(state.preferences.area);
   const [radius, setRadius] = useState(state.preferences.radius);
-  const [phone, setPhone] = useState(formatPhone(state.user?.phone ?? ""));
+  const [phone, setPhone] = useState(formatPhone(state.preferences.phone));
   const [phoneError, setPhoneError] = useState("");
   const [text, setText] = useState("");
   const title =
@@ -559,7 +559,7 @@ export function UtilityScreen({ screen }: { screen: string }) {
                 if (!area.trim()) return;
                 update((s) => ({
                   ...s,
-                  preferences: { area: area.trim(), radius },
+                  preferences: { ...s.preferences, area: area.trim(), radius },
                 }));
                 notify("Preferencje zapisane.");
               }}
@@ -598,24 +598,16 @@ export function UtilityScreen({ screen }: { screen: string }) {
                   return;
                 }
                 setPhoneError("");
-                // Nothing to clear without a profile; do not create one for it.
-                if (!state.user && !digits) return;
-                requireUser(() => {
-                  update((s) => ({
-                    ...s,
-                    user: s.user && {
-                      name: s.user.name,
-                      role: s.user.role,
-                      ...(digits && { phone: digits }),
-                    },
-                  }));
-                  setPhone(formatPhone(digits));
-                  notify(
-                    digits
-                      ? "Numer telefonu zapisany."
-                      : "Numer telefonu usunięty.",
-                  );
-                });
+                update((s) => ({
+                  ...s,
+                  preferences: { ...s.preferences, phone: digits },
+                }));
+                setPhone(formatPhone(digits));
+                notify(
+                  digits
+                    ? "Numer telefonu zapisany."
+                    : "Numer telefonu usunięty.",
+                );
               }}
             >
               Zapisz numer telefonu

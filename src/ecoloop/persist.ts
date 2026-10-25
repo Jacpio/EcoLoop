@@ -44,12 +44,7 @@ export function mergeSavedState<S extends object>(
     typeof saved.user.name === "string" &&
     typeof saved.user.role === "string"
   )
-    next.user = {
-      name: saved.user.name,
-      role: saved.user.role,
-      ...(typeof saved.user.phone === "string" &&
-        /^\d{9}$/.test(saved.user.phone) && { phone: saved.user.phone }),
-    };
+    next.user = { name: saved.user.name, role: saved.user.role };
   if (isRecord(saved.pointStatus))
     next.pointStatus = Object.fromEntries(
       Object.entries(saved.pointStatus).filter(
@@ -65,6 +60,10 @@ export function mergeSavedState<S extends object>(
         ),
       ),
     };
+  // A saved phone is either empty or exactly nine digits; anything else is junk.
+  const prefs = next.preferences as Record<string, unknown> | undefined;
+  if (prefs && !/^(\d{9})?$/.test(String(prefs.phone ?? "")))
+    prefs.phone = (base.preferences as Record<string, unknown>).phone;
   if (isRecord(saved.draft))
     next.draft = { ...(base.draft as object), ...saved.draft };
   return next as S;

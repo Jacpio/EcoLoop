@@ -227,7 +227,7 @@ export function CreateScreen() {
                   : {
                       blik: true,
                       phone:
-                        draft.phone || formatPhone(state.user?.phone ?? ""),
+                        draft.phone || formatPhone(state.preferences.phone),
                     },
               )
             }
@@ -572,7 +572,7 @@ export function CollectionScreen() {
     ...collection,
     quantity: collection.returned ?? collection.actual ?? collection.quantity,
   });
-  const userPhone = state.user?.phone;
+  const userPhone = state.preferences.phone;
   const toggleTransfer = () => {
     if (collection.transferPhone)
       return dialog({
