@@ -44,7 +44,11 @@ export function mergeSavedState<S extends object>(
     typeof saved.user.name === "string" &&
     typeof saved.user.role === "string"
   )
-    next.user = { name: saved.user.name, role: saved.user.role };
+    next.user = {
+      name: saved.user.name,
+      role: saved.user.role,
+      ...(typeof saved.user.phone === "string" && { phone: saved.user.phone }),
+    };
   if (isRecord(saved.pointStatus))
     next.pointStatus = Object.fromEntries(
       Object.entries(saved.pointStatus).filter(

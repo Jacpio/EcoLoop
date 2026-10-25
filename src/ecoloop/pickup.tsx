@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Image, Linking } from "react-native";
+import { Image, Linking, Pressable } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import {
   acceptOffer,
@@ -15,9 +15,11 @@ import {
   Collection,
   createDraft,
   estimate,
+  formatPhone,
   isPastDate,
   Material,
   money,
+  normalizePhone,
   Offer,
   parseDatePl,
   validDate,
@@ -61,6 +63,12 @@ function draftProblem(draft: Offer, upToStep: number) {
     };
   if (isPastDate(draft.date))
     return { step: 2, message: "Termin odbioru nie może być w przeszłości." };
+  if (draft.blik && !normalizePhone(draft.phone ?? ""))
+    return {
+      step: 2,
+      message:
+        "Podaj poprawny numer telefonu (9 cyfr) albo wybierz rozliczenie gotówką.",
+    };
   return null;
 }
 const startMinutes = (time: string) => {
@@ -99,6 +107,10 @@ export function CreateScreen() {
     requireUser(() => {
       const offer = {
         ...draft,
+        blik: !!draft.blik,
+        phone: draft.blik
+          ? (normalizePhone(draft.phone ?? "") ?? undefined)
+          : undefined,
         local: true,
         id: "EL-" + Date.now().toString().slice(-6),
       };
@@ -201,6 +213,42 @@ export function CreateScreen() {
             value={draft.note}
             onChangeText={(note) => patch({ note })}
           />
+          <T size={14} muted>
+            Rozliczenie ze zbierającym
+          </T>
+          <Chips
+            options={["Gotówka", "Gotówka lub BLIK"]}
+            value={draft.blik ? "Gotówka lub BLIK" : "Gotówka"}
+            onChange={(option) =>
+              patch(
+                option === "Gotówka"
+                  ? { blik: false }
+                  : {
+                      blik: true,
+                      phone:
+                        draft.phone || formatPhone(state.user?.phone ?? ""),
+                    },
+              )
+            }
+          />
+          {draft.blik && (
+            <>
+              <Input
+                label="Numer telefonu do BLIK"
+                keyboardType="phone-pad"
+                autoComplete="tel"
+                value={draft.phone ?? ""}
+                onChangeText={(phone) => patch({ phone })}
+                placeholder="+48 600 100 200"
+              />
+              <Note>
+                Numer zobaczy tylko zbierający, który przyjmie odbiór. Jeśli
+                nie będzie miał gotówki, prześle Twój udział BLIK-iem na
+                telefon. Działa to, gdy masz tę opcję włączoną w aplikacji
+                bankowej.
+              </Note>
+            </>
+          )}
           <PrivacyNote />
           <Button icon="arrow" onPress={next}>
             Dalej: podsumowanie
@@ -512,6 +560,29 @@ export function CollectionScreen() {
     setError("");
     notify("Przekazanie opakowań potwierdzone. Teraz możesz podsumować zwrot.");
   };
+  const place = collection.returnPlace ?? "automat";
+  const settled = estimate({
+    ...collection,
+    quantity: collection.returned ?? collection.actual ?? collection.quantity,
+  });
+  const userPhone = state.user?.phone;
+  const toggleTransfer = () => {
+    if (!userPhone)
+      return dialog({
+        title: "Najpierw dodaj numer telefonu",
+        body: "Żeby odebrać kaucję przelewem, podaj numer telefonu do BLIK w ustawieniach.",
+        confirm: "Przejdź do ustawień",
+        onConfirm: () => go("preferences"),
+      });
+    dialog({
+      title: "Odbiór kaucji przelewem",
+      body: collection.transfer
+        ? `Przelew na ${formatPhone(userPhone)} jest włączony. Możesz go wyłączyć i odebrać kaucję w gotówce.`
+        : `Kaucja za butelki wrzucone do kaucjomatu (szac. ${money(settled.total)}) zostanie przelana BLIK-iem na numer ${formatPhone(userPhone)} od razu, gdy kaucjomat odbierze butelki i wszystko się przetworzy. Wersja demo: żadna płatność nie jest wykonywana, a funkcja wymaga współpracy z operatorem kaucjomatów.`,
+      confirm: collection.transfer ? "Wyłącz przelew" : "Włącz przelew",
+      onConfirm: () => patch({ transfer: !collection.transfer }),
+    });
+  };
   const complete = () =>
     dialog({
       title: "Podsumowanie zwrotu",
@@ -559,6 +630,25 @@ export function CollectionScreen() {
               Adres widoczny po przyjęciu. Nie udostępniaj go innym.
             </T>
           </Card>
+          {collection.blik &&
+            collection.phone &&
+            collection.status !== "Anulowany" &&
+            settled.owner > 0 && (
+              <Card>
+                <T bold size={18}>
+                  Rozliczenie z oddającym
+                </T>
+                <T>
+                  Oddający przyjmuje też BLIK. Jeśli nie masz gotówki,
+                  prześlij mu {money(settled.owner)} na numer{" "}
+                  {formatPhone(collection.phone)}.
+                </T>
+                <T muted size={13}>
+                  Demo: aplikacja nie wykonuje przelewów. Zrób przelew BLIK na
+                  telefon w swojej aplikacji bankowej.
+                </T>
+              </Card>
+            )}
           <Card wash>
             <T bold size={21}>
               PIN demo: {collection.pin}
@@ -602,6 +692,46 @@ export function CollectionScreen() {
                 Oddaj je w punkcie, a następnie zapisz faktyczną liczbę
                 przyjętych opakowań.
               </T>
+              <T size={14} muted>
+                Gdzie oddajesz opakowania?
+              </T>
+              <Chips
+                options={["Kaucjomat", "Punkt ręczny"]}
+                value={place === "automat" ? "Kaucjomat" : "Punkt ręczny"}
+                onChange={(option) =>
+                  patch({
+                    returnPlace: option === "Kaucjomat" ? "automat" : "ręczny",
+                  })
+                }
+              />
+              {place === "automat" && (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Odbiór kaucji przelewem"
+                  onPress={toggleTransfer}
+                >
+                  <Card wash>
+                    <Row
+                      style={{
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <T bold size={17}>
+                        Odbiór kaucji przelewem
+                      </T>
+                      <Badge green={!!collection.transfer}>
+                        {collection.transfer ? "Włączony" : "Demo"}
+                      </Badge>
+                    </Row>
+                    <T size={14}>
+                      {collection.transfer
+                        ? `BLIK na ${formatPhone(userPhone ?? "")} po przetworzeniu butelek.`
+                        : "Zamiast gotówki dostaniesz BLIK-a na telefon. Dotknij, aby zobaczyć szczegóły."}
+                    </T>
+                  </Card>
+                </Pressable>
+              )}
               <Button onPress={complete}>Podsumuj zwrot w punkcie</Button>
             </Card>
           )}
@@ -620,6 +750,12 @@ export function CollectionScreen() {
                 }}
                 full={false}
               />
+              {collection.transfer && collection.returnPlace !== "ręczny" && (
+                <T size={14}>
+                  Kaucja BLIK-iem na {formatPhone(userPhone ?? "")} (
+                  {money(settled.total)}).
+                </T>
+              )}
               <T size={13} muted>
                 Rozliczenie symulowane · nie wykonano płatności.
               </T>

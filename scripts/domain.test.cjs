@@ -6,8 +6,10 @@ const {
   estimate,
   filterCollectionPoints,
   formatDatePl,
+  formatPhone,
   isPastDate,
   normalizeText,
+  normalizePhone,
   parseDatePl,
   relativeDay,
   supportsArea,
@@ -177,4 +179,32 @@ test("Wołacz w powitaniu i wielka pierwsza litera", () => {
   assert.equal(vocative("Piotr"), "Piotr");
   assert.equal(upperFirst("dziś, 17:00–18:00"), "Dziś, 17:00–18:00");
   assert.equal(upperFirst(""), "");
+});
+
+test("Numer telefonu: akceptuje 9 cyfr z prefiksem lub separatorami, resztę odrzuca", () => {
+  for (const value of [
+    "512345678",
+    "512 345 678",
+    "512-345-678",
+    "+48 512 345 678",
+    "48512345678",
+    "0048 512 345 678",
+  ])
+    assert.equal(normalizePhone(value), "512345678", value);
+  for (const value of [
+    "",
+    "   ",
+    "12345678",
+    "5123456789",
+    "012345678",
+    "abc",
+    "+49 512 345 678",
+    "512 345 67a",
+  ])
+    assert.equal(normalizePhone(value), null, value);
+});
+
+test("Numer telefonu jest wyświetlany jako +48 XXX XXX XXX", () => {
+  assert.equal(formatPhone("512345678"), "+48 512 345 678");
+  assert.equal(formatPhone(""), "");
 });

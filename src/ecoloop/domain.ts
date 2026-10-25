@@ -11,11 +11,18 @@ export type Offer = {
   distance: string;
   photo?: string;
   local?: boolean;
+  /** The giver also accepts a BLIK transfer of their share, to `phone`. */
+  blik?: boolean;
+  phone?: string;
 };
+export type ReturnPlace = "automat" | "ręczny";
 export type Collection = Offer & {
   status: "Przyjęty" | "Odebrany" | "Zakończony" | "Anulowany";
   address: string;
   pin: string;
+  returnPlace?: ReturnPlace;
+  /** Collector asked the machine to pay the deposit out by BLIK (demo). */
+  transfer?: boolean;
   problem?: string;
   actual?: number;
   returned?: number;
@@ -111,6 +118,8 @@ export const initialOffers: Offer[] = [
     time: "10:00–12:00",
     note: "Torba będzie gotowa przy wejściu.",
     distance: "1,6 km",
+    blik: true,
+    phone: "600100200",
   },
 ];
 export const initialElectronics: Electronic[] = [
@@ -175,6 +184,14 @@ export const estimate = (
     owner: (totalCents - collectorCents) / 100,
   };
 };
+/** Nine-digit Polish number from "+48 512-345-678" style input, or null. */
+export function normalizePhone(value: string) {
+  const compact = value.replace(/[\s-]/g, "");
+  const match = /^(?:(?:\+|00)?48)?([1-9]\d{8})$/.exec(compact);
+  return match ? match[1] : null;
+}
+export const formatPhone = (digits: string) =>
+  digits ? `+48 ${digits.replace(/(\d{3})(?=\d)/g, "$1 ")}` : "";
 export const money = (value: number) =>
   `${Number(value.toFixed(2)).toLocaleString("pl-PL")} zł`;
 export const materialLabel = (material: Material) =>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Pressable, Switch, View } from "react-native";
 import { CollectionCard, OfferCard, Timeline } from "./blocks";
-import { vocative } from "./domain";
+import { formatPhone, normalizePhone, vocative } from "./domain";
 import { useEco } from "./store";
 import {
   Badge,
@@ -485,10 +485,12 @@ export function Stat({
   );
 }
 export function UtilityScreen({ screen }: { screen: string }) {
-  const { state, update, dialog, notify, reset } = useEco();
+  const { state, update, dialog, notify, reset, requireUser } = useEco();
   const desktop = useDesktop();
   const [area, setArea] = useState(state.preferences.area);
   const [radius, setRadius] = useState(state.preferences.radius);
+  const [phone, setPhone] = useState(formatPhone(state.user?.phone ?? ""));
+  const [phoneError, setPhoneError] = useState("");
   const [text, setText] = useState("");
   const title =
     (
@@ -562,6 +564,56 @@ export function UtilityScreen({ screen }: { screen: string }) {
               }}
             >
               Zapisz preferencje
+            </Button>
+            <Input
+              label="Numer telefonu do BLIK"
+              keyboardType="phone-pad"
+              autoComplete="tel"
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="+48 600 100 200"
+            />
+            <Note>
+              Numer służy do odbioru kaucji przelewem z kaucjomatu oraz do
+              rozliczeń BLIK z sąsiadami. Pokazujemy go tylko osobom, którym
+              sam go udostępnisz w ogłoszeniu. Wersja demo nie wykonuje
+              płatności.
+            </Note>
+            {!!phoneError && (
+              <T color={C.brand} accessibilityRole="alert">
+                {phoneError}
+              </T>
+            )}
+            <Button
+              secondary
+              onPress={() => {
+                const digits = phone.trim() ? normalizePhone(phone) : "";
+                if (digits === null) {
+                  setPhoneError(
+                    "Podaj numer w formacie 9 cyfr, np. 600 100 200.",
+                  );
+                  return;
+                }
+                setPhoneError("");
+                requireUser(() => {
+                  update((s) => ({
+                    ...s,
+                    user: s.user && {
+                      name: s.user.name,
+                      role: s.user.role,
+                      ...(digits && { phone: digits }),
+                    },
+                  }));
+                  setPhone(formatPhone(digits));
+                  notify(
+                    digits
+                      ? "Numer telefonu zapisany."
+                      : "Numer telefonu usunięty.",
+                  );
+                });
+              }}
+            >
+              Zapisz numer telefonu
             </Button>
           </>
         )}

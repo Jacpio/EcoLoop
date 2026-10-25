@@ -91,3 +91,20 @@ test("Wylogowanie (user: null) jest zachowane po odświeżeniu", () => {
   });
   assert.equal(result.user, null);
 });
+
+test("Numer telefonu użytkownika przeżywa zapis, a zły typ jest ignorowany", () => {
+  const withPhone = mergeSavedState(
+    saved({ user: { name: "Anna", role: "Oddaję", phone: "512345678" } }),
+    defaults,
+  );
+  assert.deepEqual(withPhone.user, {
+    name: "Anna",
+    role: "Oddaję",
+    phone: "512345678",
+  });
+  const badPhone = mergeSavedState(
+    saved({ user: { name: "Anna", role: "Oddaję", phone: 512345678 } }),
+    defaults,
+  );
+  assert.deepEqual(badPhone.user, { name: "Anna", role: "Oddaję" });
+});
