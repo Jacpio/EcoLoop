@@ -242,6 +242,23 @@ export function supportsArea(area: string, partnerArea: string) {
   });
 }
 
+const districts = [
+  "centrum",
+  "srodmiescie",
+  "wola",
+  "mokotow",
+  "ochota",
+  "praga",
+  "zoliborz",
+  "ursynow",
+  "bemowo",
+  "bielany",
+  "targowek",
+  "wawer",
+  "wilanow",
+  "ursus",
+  "wlochy",
+];
 export function filterCollectionPoints({
   category,
   type = "Wszystkie",
@@ -255,16 +272,19 @@ export function filterCollectionPoints({
   query?: string;
   withHours?: boolean;
 }) {
-  const search = normalizeText(query.trim());
-  // The demo catalogue covers only Warsaw, so a city-level query matches every point.
-  const wholeCity = !search || search.includes("warszawa");
+  // The demo catalogue covers only Warsaw, so the city and district names are
+  // not filters. What is left (a street, a point name) must match every word.
+  const words = normalizeText(query)
+    .split(/[\s,;]+/)
+    .filter((word) => word && word !== "warszawa" && !districts.includes(word));
   return points.filter(
     (point) =>
       point.category === category &&
       (type === "Wszystkie" || point.type === type) &&
       (material === "Wszystkie" || point.materials.includes(material)) &&
       (!withHours || Boolean(point.hours)) &&
-      (wholeCity ||
-        normalizeText(`${point.name} ${point.address}`).includes(search)),
+      words.every((word) =>
+        normalizeText(`${point.name} ${point.address}`).includes(word),
+      ),
   );
 }

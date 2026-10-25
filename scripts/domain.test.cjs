@@ -124,6 +124,17 @@ test("Wyszukiwanie ignoruje wielkość liter i polskie znaki", () => {
   );
 });
 
+test("Ulica z miastem nadal zawęża wyniki, a słowa muszą pasować wszystkie", () => {
+  const ids = (query, category = "packaging") =>
+    filterCollectionPoints({ category, query }).map((p) => p.id);
+  assert.deepEqual(ids("Marszałkowska 104, Warszawa"), ["market"]);
+  assert.deepEqual(ids("warszawa, mirowski"), ["hala"]);
+  assert.deepEqual(ids("Żelazna, Warszawa", "electronics"), ["elektro"]);
+  assert.deepEqual(ids("Marszałkowska 999"), []);
+  assert.deepEqual(ids("Wola"), ["market", "hala"]);
+  assert.deepEqual(ids("Nieistniejący punkt"), []);
+});
+
 test("Zapytanie o miasto (z dzielnicą) pokazuje cały katalog, a puste pole też", () => {
   const all = ["market", "hala"];
   for (const query of ["", "  ", "Warszawa", "warszawa, centrum", "Warszawa, Wola"])
