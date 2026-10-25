@@ -11,8 +11,10 @@ const {
   parseDatePl,
   relativeDay,
   supportsArea,
+  upperFirst,
   validDate,
   validTime,
+  vocative,
 } = require("../src/ecoloop/domain.ts");
 
 test("Stawki kaucji: PET i puszki 0,50 zł, szkło 1 zł", () => {
@@ -167,4 +169,12 @@ test("Obszar partnera: dzielnice, polskie znaki i alias Śródmieście → Centr
   assert.equal(supportsArea("Praga", partner), false);
   assert.equal(supportsArea("Warszawa", ""), false);
   assert.equal(supportsArea("Wola", " , "), false);
+});
+
+test("Wołacz w powitaniu i wielka pierwsza litera", () => {
+  assert.equal(vocative("Anna"), "Anno");
+  assert.equal(vocative("Ola"), "Olo");
+  assert.equal(vocative("Piotr"), "Piotr");
+  assert.equal(upperFirst("dziś, 17:00–18:00"), "Dziś, 17:00–18:00");
+  assert.equal(upperFirst(""), "");
 });

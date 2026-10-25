@@ -14,6 +14,8 @@ import {
   Collection,
   createDraft,
   Electronic,
+  formatDatePl,
+  isPastDate,
   initialElectronics,
   initialOffers,
   Offer,
@@ -132,7 +134,14 @@ export function EcoProvider({ children }: { children: React.ReactNode }) {
               JSON.parse(raw),
               createInitialState(),
             );
-            if (restored) setState(restored);
+            // A draft saved on an earlier day must not keep a past pickup date.
+            if (restored)
+              setState({
+                ...restored,
+                draft: isPastDate(restored.draft.date)
+                  ? { ...restored.draft, date: formatDatePl(new Date()) }
+                  : restored.draft,
+              });
           } catch {
             /* Recover from corrupt local demo data. */
           }

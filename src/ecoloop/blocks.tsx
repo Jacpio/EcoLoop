@@ -9,6 +9,7 @@ import {
   Offer,
   points,
   relativeDay,
+  upperFirst,
 } from "./domain";
 import { useEco } from "./store";
 import {
@@ -92,7 +93,7 @@ export function OfferCard({
       </T>
       {compact && (
         <T size={14}>
-          {relativeDay(offer.date)}, {offer.time}
+          {upperFirst(relativeDay(offer.date))}, {offer.time}
         </T>
       )}
       {!compact && (

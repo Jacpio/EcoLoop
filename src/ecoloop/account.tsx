@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Pressable, Switch, View } from "react-native";
 import { CollectionCard, OfferCard, Timeline } from "./blocks";
+import { vocative } from "./domain";
 import { useEco } from "./store";
 import {
   Badge,
@@ -262,7 +263,7 @@ export function ProfileScreen() {
       {desktop && (
         <Heading
           eyebrow="TWOJE KONTO"
-          title={`Cześć, ${state.user?.name.split(" ")[0] || "Anno"}. Dobry dzień na dobry obieg.`}
+          title={`Cześć, ${vocative(state.user?.name.split(" ")[0] || "Anna")}. Dobry dzień na dobry obieg.`}
           subtitle="Zarządzaj odbiorami i zobacz, co dzieje się w Twojej okolicy."
           action={
             <Button icon="plus" onPress={() => go("create")}>

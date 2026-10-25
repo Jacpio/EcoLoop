@@ -27,6 +27,7 @@ import {
   useDesktop,
 } from "./ui";
 import { OfferCard, PointCard } from "./blocks";
+import { vocative } from "./domain";
 
 export { Onboarding } from "./onboarding";
 
@@ -45,7 +46,7 @@ export function Home() {
 function MobileHome() {
   const { state } = useEco();
   return (
-    <Shell title={`Cześć, ${state.user?.name.split(" ")[0] || "Anno"}!`}>
+    <Shell title={`Cześć, ${vocative(state.user?.name.split(" ")[0] || "Anna")}!`}>
       <Col>
         <Pressable
           accessibilityRole="link"

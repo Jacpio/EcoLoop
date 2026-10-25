@@ -208,6 +208,12 @@ export function parseDatePl(value: string) {
     : null;
 }
 export const validDate = (value: string) => parseDatePl(value) !== null;
+/** Vocative of a first name for greetings: "Anna" -> "Anno" (feminine -a names only). */
+export const vocative = (firstName: string) =>
+  firstName.endsWith("a") ? firstName.slice(0, -1) + "o" : firstName;
+export const upperFirst = (text: string) =>
+  text.charAt(0).toLocaleUpperCase("pl") + text.slice(1);
+
 /** "dziś" / "jutro" for the next two days, otherwise the date itself. */
 export function relativeDay(value: string, now = new Date()) {
   const date = parseDatePl(value);
