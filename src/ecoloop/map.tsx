@@ -90,7 +90,7 @@ export function MapScreen() {
       });
       setSelected(null);
       notify(
-        "Mapa pokazuje Twoją lokalizację. Katalog przykładowych punktów obejmuje Warszawę.",
+        "Mapa pokazuje Twoją lokalizację. Katalog przykładowych punktów obejmuje Częstochowę.",
       );
     } catch {
       notify(
@@ -317,7 +317,7 @@ export function MapScreen() {
                   ? "Butelki i puszki. W dobrym obiegu."
                   : "Elektronika. We właściwym punkcie."
               }
-              subtitle="Mapa OpenStreetMap · punkty demonstracyjne · dostępność punktów nie jest sprawdzana na żywo"
+              subtitle="Mapy Google (lub OpenStreetMap) · punkty demonstracyjne · dostępność punktów nie jest sprawdzana na żywo"
             />
           )}
           <MapCanvas
@@ -358,7 +358,7 @@ export function MapScreen() {
               {!filtered.length && (
                 <Empty
                   title="Brak punktów"
-                  text="Zmień filtry lub wyszukaj Warszawa, Centrum."
+                  text="Zmień filtry lub wyszukaj Częstochowa, Centrum."
                   action="Wyczyść filtry"
                   onPress={() => {
                     setQuery("");
@@ -538,7 +538,7 @@ export function PointDetails({
           Alternatywa:{" "}
           {id === "hala"
             ? "Market Centrum · automat · 0,8 km · 06:00–23:00"
-            : "Hala Mirowska · ręczny · 1,4 km · 08:00–18:00"}
+            : "Rynek Wieluński · ręczny · 1,4 km · 08:00–18:00"}
         </Note>
       )}
       <Button secondary onPress={report}>

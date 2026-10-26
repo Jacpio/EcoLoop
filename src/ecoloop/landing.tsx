@@ -226,7 +226,7 @@ function Landing() {
             <Col style={{ flex: 1 }}>
               <PointCard id="market" />
               <T muted size={12}>
-                Warszawa, Centrum. Dane demonstracyjne. Dostępność nie jest
+                Częstochowa, Centrum. Dane demonstracyjne. Dostępność nie jest
                 statusem na żywo — sprawdź przed wyjściem.
               </T>
               <Button secondary icon="navigate" onPress={() => go("map")}>
@@ -507,7 +507,7 @@ function Landing() {
             <LineDivider />
             <T size={11} muted>
               © 2026 EcoLoop · Projekt demonstracyjny · dane przykładowe / brak
-              rzeczywistych płatności. Mapa OpenStreetMap · punkty przykładowe,
+              rzeczywistych płatności. Mapy Google / OpenStreetMap · punkty przykładowe,
               bez weryfikacji dostępności na żywo.
             </T>
           </View>

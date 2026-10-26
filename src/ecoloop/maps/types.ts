@@ -19,13 +19,16 @@ export type MapEvent =
   | { channel: "ecoloop-map-v1"; type: "select"; id: string }
   | {
       channel: "ecoloop-map-v1";
-      type: "ready" | "tiles-error" | "tiles-loaded";
+      type: "ready" | "tiles-error" | "tiles-loaded" | "provider-failed";
     };
+export type MapProvider = "google" | "osm";
+export const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 export type MapSurfaceProps = {
   config: MapConfig;
   onSelect: (id: string) => void;
   onReady: () => void;
   onTileError: (failed: boolean) => void;
+  onProvider?: (provider: MapProvider) => void;
 };
 export function parseMapEvent(value: unknown): MapEvent | null {
   if (!value || typeof value !== "object") return null;
@@ -36,7 +39,8 @@ export function parseMapEvent(value: unknown): MapEvent | null {
   if (
     event.type === "ready" ||
     event.type === "tiles-error" ||
-    event.type === "tiles-loaded"
+    event.type === "tiles-loaded" ||
+    event.type === "provider-failed"
   )
     return { channel: event.channel, type: event.type };
   return null;

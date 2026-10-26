@@ -1,7 +1,8 @@
 // Pure helpers for restoring the locally saved demo state. No runtime imports,
 // so they can be exercised by `npm test` without React Native.
 
-export const STORAGE_KEY = "ecoloop-demo-v1";
+// v2: demo data moved from Warsaw to Częstochowa; older saves are dropped.
+export const STORAGE_KEY = "ecoloop-demo-v2";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && !Array.isArray(value);

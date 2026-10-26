@@ -1,8 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Linking } from "react-native";
 import { WebView } from "react-native-webview";
 import { createMapDocument } from "./document";
-import { MapSurfaceProps, parseMapEvent } from "./types";
+import { createGoogleMapDocument } from "./google-document";
+import {
+  googleMapsApiKey,
+  MapProvider,
+  MapSurfaceProps,
+  parseMapEvent,
+} from "./types";
 
 export default function MapSurface(props: MapSurfaceProps) {
   const webview = useRef<WebView<unknown>>(null);
@@ -11,10 +17,22 @@ export default function MapSurface(props: MapSurfaceProps) {
   useEffect(() => {
     latest.current = props;
   });
-  const [source] = useState(() => ({
-    html: createMapDocument(),
-    baseUrl: "https://ecoloop.local/",
-  }));
+  const [provider, setProvider] = useState<MapProvider>(
+    googleMapsApiKey ? "google" : "osm",
+  );
+  const source = useMemo(
+    () => ({
+      html:
+        provider === "google"
+          ? createGoogleMapDocument(googleMapsApiKey)
+          : createMapDocument(),
+      baseUrl: "https://ecoloop.local/",
+    }),
+    [provider],
+  );
+  useEffect(() => {
+    latest.current.onProvider?.(provider);
+  }, [provider]);
   const config = JSON.stringify(props.config);
   useEffect(() => {
     if (ready.current)
@@ -24,6 +42,7 @@ export default function MapSurface(props: MapSurfaceProps) {
   }, [config]);
   return (
     <WebView<unknown>
+      key={provider}
       ref={webview}
       source={source}
       originWhitelist={["*"]}
@@ -40,7 +59,11 @@ export default function MapSurface(props: MapSurfaceProps) {
           request.url.startsWith("about:srcdoc")
         )
           return true;
-        if (request.url.startsWith("https://www.openstreetmap.org/"))
+        if (
+          request.url.startsWith("https://www.openstreetmap.org/") ||
+          request.url.startsWith("https://www.google.com/") ||
+          request.url.startsWith("https://maps.google.com/")
+        )
           Linking.openURL(request.url).catch(() => {});
         return false;
       }}
@@ -64,7 +87,10 @@ export default function MapSurface(props: MapSurfaceProps) {
           latest.current.config.points.some((p) => p.id === message.id)
         )
           latest.current.onSelect(message.id);
-        else if (message.type === "tiles-error")
+        else if (message.type === "provider-failed") {
+          ready.current = false;
+          setProvider("osm");
+        } else if (message.type === "tiles-error")
           latest.current.onTileError(true);
         else if (message.type === "tiles-loaded")
           latest.current.onTileError(false);

@@ -10,7 +10,7 @@ html,body,#map{height:100%;width:100%;margin:0;background:#eee7dc;font-family:sy
 (function(){
 var channel='ecoloop-map-v1';
 function send(type,id){var message={channel:channel,type:type};if(id)message.id=id;if(window.ReactNativeWebView)window.ReactNativeWebView.postMessage(JSON.stringify(message));else window.parent.postMessage(message,'*');}
-var map=L.map('map',{zoomControl:false,scrollWheelZoom:false,attributionControl:true}).setView([52.2338,21.0028],14);
+var map=L.map('map',{zoomControl:false,scrollWheelZoom:false,attributionControl:true}).setView([50.8118,19.1203],14);
 map.attributionControl.setPrefix(false);
 L.control.zoom({position:'bottomleft',zoomInTitle:'Przybliż mapę',zoomOutTitle:'Oddal mapę'}).addTo(map);
 L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);

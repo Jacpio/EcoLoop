@@ -377,7 +377,7 @@ export function CollectScreen() {
         <Col style={{ flex: desktop ? 1 : undefined }}>
           <Input
             label="Okolica · do 3 km"
-            placeholder="Centrum, Wola…"
+            placeholder="Centrum, Tysiąclecie…"
             value={area}
             onChangeText={setArea}
             icon="search"
@@ -919,11 +919,11 @@ export function PlanScreen() {
           disabled={!collections.length}
           onPress={() =>
             Linking.openURL(
-              "https://www.google.com/maps/dir/?api=1&destination=Warszawa+Marszalkowska+104&waypoints=" +
+              "https://www.google.com/maps/dir/?api=1&destination=Czestochowa+Najswietszej+Maryi+Panny+64&waypoints=" +
                 encodeURIComponent(
                   // Street and number only: flat and staircase stay private.
                   collections
-                    .map((c) => "Warszawa " + c.address.split(",")[0])
+                    .map((c) => "Częstochowa " + c.address.split(",")[0])
                     .join("|"),
                 ),
             ).catch(() =>

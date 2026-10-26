@@ -192,7 +192,7 @@ export function PartnerScreen() {
             : "Sprzęt we właściwych rękach."
         }
         subtitle="Elektroodpady wyłącznie do uprawnionego odbiorcy. Sprawne urządzenia — osobna ścieżka darowizny."
-        action={desktop && <Badge>Obszar: Centrum, Wola, Mokotów</Badge>}
+        action={desktop && <Badge>Obszar: Centrum, Tysiąclecie, Raków</Badge>}
       />
       <Col>
         <Row style={{ flexDirection: desktop ? "row" : "column" }}>
@@ -271,7 +271,7 @@ export function PartnerScreen() {
                   Edytuj →
                 </Button>
               </Row>
-              <T size={14}>Warszawa: {state.partnerArea}</T>
+              <T size={14}>Częstochowa: {state.partnerArea}</T>
               <T muted size={13}>
                 {state.partnerHours} · odbiór po potwierdzeniu terminu
               </T>

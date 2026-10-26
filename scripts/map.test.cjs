@@ -39,13 +39,13 @@ test("Szkło nie pojawia się w automacie przyjmującym wyłącznie PET i puszki
 });
 test("Wyszukiwanie i filtr typu nadal zawężają zbiór wewnątrz kategorii", () => {
   assert.deepEqual(
-    filterCollectionPoints({ category: "packaging", query: "mirowska" }).map(
+    filterCollectionPoints({ category: "packaging", query: "wieluński" }).map(
       (p) => p.id,
     ),
     ["hala"],
   );
   assert.equal(
-    filterCollectionPoints({ category: "electronics", query: "mirowska" })
+    filterCollectionPoints({ category: "electronics", query: "wieluński" })
       .length,
     0,
   );

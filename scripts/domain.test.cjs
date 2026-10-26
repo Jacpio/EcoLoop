@@ -130,13 +130,13 @@ test("Nowy szkic ogłoszenia ma dzisiejszą datę i nie dzieli stanu z poprzedni
 test("Wyszukiwanie ignoruje wielkość liter i polskie znaki", () => {
   assert.equal(normalizeText("Żelazna ŁÓDŹ"), "zelazna lodz");
   assert.deepEqual(
-    filterCollectionPoints({ category: "electronics", query: "ZELAZNA" }).map(
+    filterCollectionPoints({ category: "electronics", query: "KILINSKIEGO" }).map(
       (p) => p.id,
     ),
     ["elektro"],
   );
   assert.deepEqual(
-    filterCollectionPoints({ category: "packaging", query: "marszalkowska" }).map(
+    filterCollectionPoints({ category: "packaging", query: "najswietszej" }).map(
       (p) => p.id,
     ),
     ["market"],
@@ -146,17 +146,17 @@ test("Wyszukiwanie ignoruje wielkość liter i polskie znaki", () => {
 test("Ulica z miastem nadal zawęża wyniki, a słowa muszą pasować wszystkie", () => {
   const ids = (query, category = "packaging") =>
     filterCollectionPoints({ category, query }).map((p) => p.id);
-  assert.deepEqual(ids("Marszałkowska 104, Warszawa"), ["market"]);
-  assert.deepEqual(ids("warszawa, mirowski"), ["hala"]);
-  assert.deepEqual(ids("Żelazna, Warszawa", "electronics"), ["elektro"]);
-  assert.deepEqual(ids("Marszałkowska 999"), []);
-  assert.deepEqual(ids("Wola"), ["market", "hala"]);
+  assert.deepEqual(ids("Najświętszej Maryi Panny 64, Częstochowa"), ["market"]);
+  assert.deepEqual(ids("czestochowa, wielunski"), ["hala"]);
+  assert.deepEqual(ids("Kilińskiego, Częstochowa", "electronics"), ["elektro"]);
+  assert.deepEqual(ids("Maryi Panny 999"), []);
+  assert.deepEqual(ids("Tysiąclecie"), ["market", "hala"]);
   assert.deepEqual(ids("Nieistniejący punkt"), []);
 });
 
 test("Zapytanie o miasto (z dzielnicą) pokazuje cały katalog, a puste pole też", () => {
   const all = ["market", "hala"];
-  for (const query of ["", "  ", "Warszawa", "warszawa, centrum", "Warszawa, Wola"])
+  for (const query of ["", "  ", "Częstochowa", "czestochowa, centrum", "Częstochowa, Raków"])
     assert.deepEqual(
       filterCollectionPoints({ category: "packaging", query }).map((p) => p.id),
       all,
@@ -165,13 +165,13 @@ test("Zapytanie o miasto (z dzielnicą) pokazuje cały katalog, a puste pole te�
 });
 
 test("Obszar partnera: dzielnice, polskie znaki i alias Śródmieście → Centrum", () => {
-  const partner = "Śródmieście, Wola, Mokotów";
-  assert.ok(supportsArea("Warszawa, Centrum", partner));
-  assert.ok(supportsArea("warszawa wola", partner));
-  assert.ok(supportsArea("MOKOTOW", partner));
-  assert.equal(supportsArea("Praga", partner), false);
-  assert.equal(supportsArea("Warszawa", ""), false);
-  assert.equal(supportsArea("Wola", " , "), false);
+  const partner = "Śródmieście, Tysiąclecie, Raków";
+  assert.ok(supportsArea("Częstochowa, Centrum", partner));
+  assert.ok(supportsArea("czestochowa tysiaclecie", partner));
+  assert.ok(supportsArea("RAKOW", partner));
+  assert.equal(supportsArea("Północ", partner), false);
+  assert.equal(supportsArea("Częstochowa", ""), false);
+  assert.equal(supportsArea("Raków", " , "), false);
 });
 
 test("Wołacz w powitaniu i wielka pierwsza litera", () => {

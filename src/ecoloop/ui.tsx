@@ -20,7 +20,7 @@ import Svg, { Path, Circle } from "react-native-svg";
 import { useEco } from "./store";
 import { points, type PointCategory } from "./domain";
 import MapSurface from "./maps/map-surface";
-import type { MapFocus } from "./maps/types";
+import type { MapFocus, MapProvider } from "./maps/types";
 
 export const C = {
   bg: "#F7F4ED",
@@ -739,6 +739,8 @@ export function MapCanvas({
 }) {
   const [ready, setReady] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
+  const [provider, setProvider] = React.useState<MapProvider>("osm");
+  const providerName = provider === "google" ? "Mapy Google" : "OpenStreetMap";
   const { state } = useEco();
   const visible = points
     .filter(
@@ -766,6 +768,10 @@ export function MapCanvas({
         onSelect={(id) => (onSelect ? onSelect(id) : go("point", { id }))}
         onReady={() => setReady(true)}
         onTileError={setFailed}
+        onProvider={(next) => {
+          setProvider(next);
+          setFailed(false);
+        }}
       />
       {!ready && (
         <View
@@ -781,7 +787,7 @@ export function MapCanvas({
         >
           <ActivityIndicator color={C.brand} />
           <T muted size={13}>
-            Wczytuję OpenStreetMap…
+            Wczytuję {providerName}…
           </T>
         </View>
       )}
@@ -811,7 +817,7 @@ export function MapCanvas({
           </T>
         </Row>
         <T size={10} muted>
-          OpenStreetMap · punkty przykładowe
+          {providerName} · punkty przykładowe
         </T>
       </View>
       {failed && (

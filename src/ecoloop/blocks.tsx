@@ -40,9 +40,9 @@ export function acceptOffer(
             {
               ...offer,
               status: "Przyjęty",
-              address: offer.area.includes("Wola")
-                ? "ul. Żelazna 32, klatka B, mieszkanie 8"
-                : "ul. Marszałkowska 104, klatka A, mieszkanie 12",
+              address: offer.area.includes("Tysiąclecie")
+                ? "al. Armii Krajowej 15, klatka B, mieszkanie 8"
+                : "al. Najświętszej Maryi Panny 64, klatka A, mieszkanie 12",
               pin: "7429",
             },
           ],

@@ -55,8 +55,8 @@ const createInitialState = (): State => ({
   draft: createDraft(),
   notifications: false,
   ecoPoints: 1250,
-  preferences: { area: "Warszawa, Centrum", radius: "3 km", phone: "" },
-  partnerArea: "Śródmieście, Wola, Mokotów",
+  preferences: { area: "Częstochowa, Centrum", radius: "3 km", phone: "" },
+  partnerArea: "Śródmieście, Tysiąclecie, Raków",
   partnerHours: "Pon.–pt. 08:00–16:00",
   reports: [
     {
@@ -70,7 +70,7 @@ const createInitialState = (): State => ({
     {
       id: "Z-070",
       title: "Aktualizacja godzin",
-      target: "Punkt Hala Mirowska",
+      target: "Punkt Rynek Wieluński",
       priority: "Normalny",
       status: "Nowe",
       note: "Zweryfikuj godziny otwarcia punktu.",

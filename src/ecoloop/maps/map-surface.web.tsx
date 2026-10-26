@@ -1,6 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createMapDocument } from "./document";
-import { MapSurfaceProps, parseMapEvent } from "./types";
+import { createGoogleMapDocument } from "./google-document";
+import {
+  googleMapsApiKey,
+  MapProvider,
+  MapSurfaceProps,
+  parseMapEvent,
+} from "./types";
 
 export default function MapSurface(props: MapSurfaceProps) {
   const frame = useRef<HTMLIFrameElement>(null);
@@ -8,7 +14,19 @@ export default function MapSurface(props: MapSurfaceProps) {
   useEffect(() => {
     latest.current = props;
   });
-  const [html] = useState(createMapDocument);
+  const [provider, setProvider] = useState<MapProvider>(
+    googleMapsApiKey ? "google" : "osm",
+  );
+  const html = useMemo(
+    () =>
+      provider === "google"
+        ? createGoogleMapDocument(googleMapsApiKey)
+        : createMapDocument(),
+    [provider],
+  );
+  useEffect(() => {
+    latest.current.onProvider?.(provider);
+  }, [provider]);
   const config = JSON.stringify(props.config);
   useEffect(() => {
     const receive = (event: MessageEvent) => {
@@ -30,6 +48,7 @@ export default function MapSurface(props: MapSurfaceProps) {
         latest.current.config.points.some((p) => p.id === message.id)
       )
         latest.current.onSelect(message.id);
+      else if (message.type === "provider-failed") setProvider("osm");
       else if (message.type === "tiles-error") latest.current.onTileError(true);
       else if (message.type === "tiles-loaded")
         latest.current.onTileError(false);
@@ -46,7 +65,8 @@ export default function MapSurface(props: MapSurfaceProps) {
   return (
     <iframe
       ref={frame}
-      title="Mapa OpenStreetMap"
+      key={provider}
+      title={provider === "google" ? "Mapa Google" : "Mapa OpenStreetMap"}
       srcDoc={html}
       referrerPolicy="strict-origin-when-cross-origin"
       onLoad={() => {

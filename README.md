@@ -1,6 +1,6 @@
 # EcoLoop
 
-Aplikacja Expo / React Native na Androida, iOS i web. Interfejs jest po polsku, a układy dopasowują się do szerokości ekranu. Zdjęcia pochodzą z dostarczonych wzorców. Mapy są interaktywne i pobierają kafelki OpenStreetMap.
+Aplikacja Expo / React Native na Androida, iOS i web. Interfejs jest po polsku, a układy dopasowują się do szerokości ekranu. Zdjęcia to fotografie stockowe. Mapy są interaktywne: Mapy Google, a bez klucza API — OpenStreetMap.
 
 ## Uruchomienie
 
@@ -12,6 +12,12 @@ npm start
 ```
 
 W terminalu Expo wybierz `w`, aby otworzyć wersję webową, lub zeskanuj QR kompatybilną wersją Expo Go. Projekt korzysta z Expo SDK 58. Można też uruchomić `npm run web`. Wymagany jest Node.js 22 lub nowszy (testy jednostkowe ładują pliki `.ts` bezpośrednio).
+
+## Google: logowanie i mapa
+
+- **Mapa Google** — klucz trafia do `.env.local` (plik nie jest w repozytorium, wzór w `.env.example`):
+  `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=...`. Bez klucza, przy odrzuconym kluczu lub braku sieci do Google mapa sama przełącza się na OpenStreetMap. W Google Cloud włącz **Maps JavaScript API**; jeśli ograniczasz klucz do witryn, dodaj `https://ecoloop.local/*` (WebView w aplikacji) i adres strony webowej (np. `http://localhost:8081/*`). Przy buildach EAS ustaw tę samą zmienną w środowisku EAS.
+- **Logowanie Google** — identyfikatory klientów OAuth są w `src/ecoloop/auth/config.ts`, a schemat URL iOS w `app.json` (plugin `@react-native-google-signin/google-signin`). Na Androidzie i iOS działa tylko w wersji deweloperskiej (`npx expo run:android|ios` albo `eas build --profile development`), nie w Expo Go — tam przycisk proponuje profil demo. Na webie logowanie idzie przez `expo-auth-session` z klientem webowym; w konsoli Google dodaj adres strony do „Autoryzowanych źródeł JavaScript” i „Autoryzowanych URI przekierowania”. Android wymaga klienta OAuth typu Android z nazwą pakietu i odciskiem SHA-1, a iOS — `ios.bundleIdentifier` w `app.json` zgodnego z klientem iOS. Token Google nie jest weryfikowany po stronie serwera (aplikacja nie ma backendu); profil zapisuje się lokalnie jak konto demo.
 
 ## Ekrany i ścieżki
 
@@ -54,8 +60,10 @@ Kontrola obejmuje TypeScript, ESLint, testy jednostkowe, produkcyjne paczki web/
 
 ## Materiały
 
-- Fotografie: fragmenty PNG przekazanych przez użytkownika.
-- Mapa: © OpenStreetMap contributors; przypisanie licencji widoczne na każdej mapie. Kafelki wymagają internetu i korzystają ze standardowego cache przeglądarki/WebView, bez pobierania offline.
+- Fotografie:
+  - `hero.jpg` — Nick Fewings, Unsplash (`-2lJGRIY5P0`), licencja Unsplash
+  - `return.jpg`, `neighbors.jpg`, `collector.jpg`, `electronics.jpg` — zdjęcia stockowe dostarczone przez autora projektu; przed publikacją sprawdź licencję każdego z nich
+- Mapa: Mapy Google (Maps JavaScript API) lub, jako zapas, © OpenStreetMap contributors; przypisanie licencji widoczne na każdej mapie. Kafelki wymagają internetu i korzystają ze standardowego cache przeglądarki/WebView, bez pobierania offline.
 - Leaflet 1.9.4 (BSD-2-Clause): skrypt i CSS są pakowane lokalnie w `src/ecoloop/maps/leaflet-vendor.ts`, licencja w tym samym folderze. Po aktualizacji pakietu uruchom `npm run sync-map-vendor`.
 - Czcionka Barlow: Google Fonts, SIL Open Font License; licencja w `assets/ecoloop/fonts/OFL.txt`.
 - Ikony interfejsu: lokalne wektory SVG. Ikona aplikacji: lokalny znak EcoLoop.

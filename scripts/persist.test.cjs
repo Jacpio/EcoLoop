@@ -13,7 +13,7 @@ const defaults = {
   draft: { id: "", quantity: 40, share: 50, date: "25.10.2026" },
   notifications: false,
   ecoPoints: 1250,
-  preferences: { area: "Warszawa, Centrum", radius: "3 km", phone: "" },
+  preferences: { area: "Częstochowa, Centrum", radius: "3 km", phone: "" },
   partnerArea: "Śródmieście",
   partnerHours: "Pon.–pt. 08:00–16:00",
 };
@@ -55,7 +55,7 @@ test("Pola ze złym typem są ignorowane, a poprawne zachowane", () => {
       ecoPoints: "dużo",
       user: { name: "Anna Kowalska" },
       pointStatus: { market: "Awaria", hala: 3 },
-      preferences: { area: "Wola", radius: 5 },
+      preferences: { area: "Tysiąclecie", radius: 5 },
     }),
     defaults,
   );
@@ -65,7 +65,7 @@ test("Pola ze złym typem są ignorowane, a poprawne zachowane", () => {
   assert.equal(result.user, null);
   assert.deepEqual(result.pointStatus, { market: "Awaria" });
   assert.deepEqual(result.preferences, {
-    area: "Wola",
+    area: "Tysiąclecie",
     radius: "3 km",
     phone: "",
   });
@@ -98,7 +98,7 @@ test("Wylogowanie (user: null) jest zachowane po odświeżeniu", () => {
 
 test("Numer telefonu w preferencjach przeżywa zapis, a śmieci są odrzucane", () => {
   const withPhone = mergeSavedState(
-    saved({ preferences: { area: "Wola", radius: "5 km", phone: "512345678" } }),
+    saved({ preferences: { area: "Tysiąclecie", radius: "5 km", phone: "512345678" } }),
     defaults,
   );
   assert.equal(withPhone.preferences.phone, "512345678");
@@ -110,7 +110,7 @@ test("Numer telefonu w preferencjach przeżywa zapis, a śmieci są odrzucane", 
       String(phone),
     );
   const legacy = mergeSavedState(
-    saved({ preferences: { area: "Wola", radius: "5 km" } }),
+    saved({ preferences: { area: "Tysiąclecie", radius: "5 km" } }),
     defaults,
   );
   assert.equal(legacy.preferences.phone, "");

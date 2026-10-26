@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Pressable, Switch, View } from "react-native";
+import { signOutGoogle, useGoogleSignIn } from "./auth/google";
 import { CollectionCard, OfferCard, Timeline } from "./blocks";
 import { formatPhone, normalizePhone, vocative } from "./domain";
 import { useEco } from "./store";
@@ -33,6 +34,28 @@ export function AuthScreen({ register = false }: { register?: boolean }) {
   const [agreed, setAgreed] = useState(true);
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const google = useGoogleSignIn();
+  const loginWithGoogle = async () => {
+    setError("");
+    setGoogleBusy(true);
+    const result = await google.signIn();
+    setGoogleBusy(false);
+    if (!result) return;
+    if ("error" in result) {
+      setError(result.error);
+      return;
+    }
+    update((s) => ({
+      ...s,
+      user: {
+        name: result.name,
+        role: role === "Zbieram" ? "Zbieram" : "Oddaję",
+      },
+      onboarded: true,
+    }));
+    go(desktop ? "profile" : "home");
+  };
   const login = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Podaj poprawny adres e-mail.");
@@ -182,19 +205,23 @@ export function AuthScreen({ register = false }: { register?: boolean }) {
         </Button>
         <Button
           secondary
+          disabled={googleBusy}
           onPress={() =>
-            dialog({
-              title: "Google · wersja demonstracyjna",
-              body: "Logowanie zewnętrzne nie jest podłączone. Możesz kontynuować na lokalnym profilu demo.",
-              confirm: "Kontynuuj w demo",
-              onConfirm: demo,
-            })
+            google.available
+              ? loginWithGoogle()
+              : dialog({
+                  title: "Logowanie Google",
+                  body: "Logowanie Google działa w wersji deweloperskiej i produkcyjnej aplikacji oraz w przeglądarce. W Expo Go możesz kontynuować na lokalnym profilu demo.",
+                  confirm: "Kontynuuj w demo",
+                  onConfirm: demo,
+                })
           }
         >
-          G · Kontynuuj z Google
+          {googleBusy ? "Łączenie z Google…" : "G · Kontynuuj z Google"}
         </Button>
         <Note>
-          Nie ma rzeczywistych kont i logowania. Nie podawaj prawdziwego hasła.
+          Konto e-mail jest demonstracyjne — nie podawaj prawdziwego hasła.
+          Logowanie Google używa Twojego konta Google.
         </Note>
         <Button
           secondary
@@ -383,7 +410,7 @@ export function ProfileScreen() {
               "pin",
               "Okolica i preferencje",
               "preferences",
-              state.preferences.area.replace("Warszawa, ", ""),
+              state.preferences.area.replace("Częstochowa, ", ""),
             ],
             ["shield", "Prywatność i dane", "safety", ""],
             ["flag", "Zgłoś nadużycie", "abuse", ""],
@@ -432,6 +459,7 @@ export function ProfileScreen() {
                 confirm: "Wyloguj się",
                 onConfirm: () => {
                   update((s) => ({ ...s, user: null }));
+                  signOutGoogle();
                   go("login");
                 },
               });

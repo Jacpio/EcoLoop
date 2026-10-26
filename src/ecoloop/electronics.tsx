@@ -122,7 +122,7 @@ export function ElectroForm({ donation = false }: { donation?: boolean }) {
   const [condition, setCondition] = useState(
     donation ? "Sprawny" : "Nie działa",
   );
-  const [area, setArea] = useState("Warszawa, Centrum");
+  const [area, setArea] = useState("Częstochowa, Centrum");
   const [date, setDate] = useState("26.10.2026 · 10:00–12:00");
   const [note, setNote] = useState("");
   const [checked, setChecked] = useState(false);

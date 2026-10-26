@@ -56,10 +56,10 @@ export const points: CollectionPoint[] = [
   {
     id: "market",
     category: "packaging",
-    latitude: 52.231,
-    longitude: 21.0123,
+    latitude: 50.8112,
+    longitude: 19.121,
     name: "Kaucjomat – Market Centrum",
-    address: "ul. Marszałkowska 104, Warszawa",
+    address: "al. Najświętszej Maryi Panny 64, Częstochowa",
     type: "Automat",
     materials: ["Butelki PET", "Puszki"],
     distance: "0,8 km",
@@ -70,10 +70,10 @@ export const points: CollectionPoint[] = [
   {
     id: "hala",
     category: "packaging",
-    latitude: 52.2384,
-    longitude: 20.9992,
-    name: "Punkt ręczny – Hala Mirowska",
-    address: "pl. Mirowski 1, Warszawa",
+    latitude: 50.8146,
+    longitude: 19.1143,
+    name: "Punkt ręczny – Rynek Wieluński",
+    address: "Rynek Wieluński 1, Częstochowa",
     type: "Ręczny",
     materials: ["Butelki PET", "Puszki", "Szkło"],
     distance: "1,4 km",
@@ -84,10 +84,10 @@ export const points: CollectionPoint[] = [
   {
     id: "elektro",
     category: "electronics",
-    latitude: 52.2318,
-    longitude: 20.9939,
+    latitude: 50.8079,
+    longitude: 19.1168,
     name: "EcoElectro – punkt Centrum",
-    address: "ul. Żelazna 32, Warszawa",
+    address: "ul. Kilińskiego 25, Częstochowa",
     type: "Elektro",
     materials: ["Elektronika"],
     distance: "2,1 km",
@@ -113,7 +113,7 @@ export const initialOffers: Offer[] = [
     material: "Puszki",
     quantity: 24,
     share: 50,
-    area: "Wola",
+    area: "Tysiąclecie",
     date: "26.10.2026",
     time: "10:00–12:00",
     note: "Torba będzie gotowa przy wejściu.",
@@ -136,7 +136,7 @@ export const initialElectronics: Electronic[] = [
     id: "EE-207",
     device: "Monitor LCD",
     condition: "Nie działa",
-    area: "Wola",
+    area: "Tysiąclecie",
     date: "27.10.2026 · 12:00–14:00",
     status: "Zaplanowane",
     note: "Odbiór z parteru.",
@@ -145,7 +145,7 @@ export const initialElectronics: Electronic[] = [
     id: "EE-206",
     device: "Telefon",
     condition: "Do oceny",
-    area: "Mokotów",
+    area: "Raków",
     date: "28.10.2026 · 10:00–12:00",
     status: "Do oceny",
     note: "Uszkodzona bateria.",
@@ -163,7 +163,7 @@ export const initialElectronics: Electronic[] = [
     id: "EE-204",
     device: "Laptop",
     condition: "Nie działa",
-    area: "Wola",
+    area: "Tysiąclecie",
     date: "24.10.2026 · 10:00–12:00",
     status: "Zakończone",
     note: "Odbiór zakończony.",
@@ -212,7 +212,7 @@ export const formatDatePl = (date: Date) =>
 export const createDraft = (now = new Date()): Offer => ({
   ...initialOffers[0],
   id: "",
-  area: "Warszawa, Centrum",
+  area: "Częstochowa, Centrum",
   distance: "0 km",
   date: formatDatePl(now),
 });
@@ -259,7 +259,7 @@ export function validTime(value: string) {
     h < 24 && endH < 24 && m < 60 && endM < 60 && h * 60 + m < endH * 60 + endM
   );
 }
-/** Lower-cases and strips Polish diacritics so "Żelazna" matches "zelazna". */
+/** Lower-cases and strips Polish diacritics so "Raków" matches "rakow". */
 export const normalizeText = (value: string) =>
   value
     .toLocaleLowerCase("pl")
@@ -282,19 +282,22 @@ export function supportsArea(area: string, partnerArea: string) {
 const districts = [
   "centrum",
   "srodmiescie",
-  "wola",
-  "mokotow",
-  "ochota",
-  "praga",
-  "zoliborz",
-  "ursynow",
-  "bemowo",
-  "bielany",
-  "targowek",
-  "wawer",
-  "wilanow",
-  "ursus",
-  "wlochy",
+  "tysiaclecie",
+  "rakow",
+  "parkitka",
+  "polnoc",
+  "stradom",
+  "wrzosowiak",
+  "lisiniec",
+  "bleszno",
+  "dzbow",
+  "grabowka",
+  "kiedrzyn",
+  "mirow",
+  "zawodzie",
+  "wyczerpy",
+  "gnaszyn",
+  "podjasnogorska",
 ];
 export function filterCollectionPoints({
   category,
@@ -309,11 +312,11 @@ export function filterCollectionPoints({
   query?: string;
   withHours?: boolean;
 }) {
-  // The demo catalogue covers only Warsaw, so the city and district names are
+  // The demo catalogue covers only Częstochowa, so the city and district names are
   // not filters. What is left (a street, a point name) must match every word.
   const words = normalizeText(query)
     .split(/[\s,;]+/)
-    .filter((word) => word && word !== "warszawa" && !districts.includes(word));
+    .filter((word) => word && word !== "czestochowa" && !districts.includes(word));
   return points.filter(
     (point) =>
       point.category === category &&

@@ -5,8 +5,11 @@
   "dependencies": {
     "@expo/ui": "~58.0.23",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-google-signin/google-signin": "^16.1.5",
     "expo": "~58.0.19",
+    "expo-auth-session": "~58.0.14",
     "expo-constants": "~58.0.13",
+    "expo-crypto": "~58.0.7",
     "expo-device": "~58.0.5",
     "expo-font": "~58.0.10",
     "expo-glass-effect": "~58.0.5",
@@ -35,9 +38,9 @@
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
-    "typescript": "~6.0.3",
     "eslint": "^9.39.5",
-    "eslint-config-expo": "~58.0.4"
+    "eslint-config-expo": "~58.0.4",
+    "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
@@ -51,5 +54,8 @@
     "test": "node --experimental-strip-types --test scripts/map.test.cjs scripts/domain.test.cjs scripts/persist.test.cjs",
     "verify": "npm run lint && npm run typecheck && npm test"
   },
-  "private": true
+  "private": true,
+  "allowScripts": {
+    "unrs-resolver@1.12.2": true
+  }
 }
